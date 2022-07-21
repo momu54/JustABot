@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder, SlashCommandBuilder } from "discord.js"
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js"
 
 module.exports = {
     data: new SlashCommandBuilder()
