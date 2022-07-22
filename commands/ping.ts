@@ -5,21 +5,18 @@ module.exports = {
         .setName("ping")
         .setDescription("show websocket ping"),
     execute: (i: CommandInteraction) => {
-        var embed = new EmbedBuilder()
-            .setColor(0x000000)
-            .setTitle("Pong!")
-            .setDescription(`${i.client.ws.ping} ms`)
+        var embed = getpingembed(i)
         var button = new ButtonBuilder()
-            .setCustomId('refreshping')
+            .setCustomId('ping.refresh')
             .setLabel('Refresh')
             .setStyle(ButtonStyle.Primary)
-        var row = new ActionRowBuilder()
+        var row = new ActionRowBuilder<ButtonBuilder>()
             .addComponents(button)
         i.reply({ embeds: [embed], components: [row] })
     },
-    button: (i: ButtonInteraction) => {
+    executeBtn: (i: ButtonInteraction) => {
         var embed = getpingembed(i)
-        i.update({ embeds: [embed], components: [row] })
+        i.update({ embeds: [embed] })
     }
 }
 

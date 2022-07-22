@@ -11,7 +11,8 @@ var commandslist: SlashCommandBuilder[] = []
 
 interface CommandType {
     data: SlashCommandBuilder,
-    execute: Function
+    execute: Function,
+    executeBtn?: Function
 }
 
 client.on("ready", () => {
@@ -33,16 +34,21 @@ async function loadcommand() {
 
 client.on('interactionCreate', async (i) => {
     if (i.type == InteractionType.ApplicationCommand) {
-        const command = commands.get(i.commandName) as CommandType;
+        const commandFile = commands.get(i.commandName) as CommandType;
         
-        if (!command) return;
+        if (!commandFile) return;
 
         try {
-            await command.execute(i);
+            await commandFile.execute(i);
         } catch (error) {
             console.error(error);
             await i.reply({ content: 'There was an error while executing this command!', ephemeral: true });
         }
+    }
+    if (i.type == InteractionType.MessageComponent) {
+        const commandName = i.customId.split('.')[0]
+        const commandFile = commands.get(commandName) as CommandType
+        commandFile.executeBtn?.(i)
     }
 });
 
