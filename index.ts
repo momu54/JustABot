@@ -28,7 +28,7 @@ async function loadcommand() {
         commandslist.push(command.data)
     }
     console.log('Started refreshing application (/) commands.');
-    client.application?.commands.set(commandslist)
+    await client.application?.commands.set(commandslist)
     console.log('Successfully reloaded application (/) commands.');
 }
 
@@ -42,13 +42,18 @@ client.on('interactionCreate', async (i) => {
             await commandFile.execute(i);
         } catch (error) {
             console.error(error);
-            await i.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+            i.reply({ content: 'There was an error while executing this command!', ephemeral: true });
         }
     }
     if (i.type == InteractionType.MessageComponent) {
         const commandName = i.customId.split('.')[0]
         const commandFile = commands.get(commandName) as CommandType
-        commandFile.executeBtn?.(i)
+        try {
+            await commandFile.executeBtn?.(i)
+        } catch (error) {
+            console.error(error);
+            i.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+        }
     }
 });
 
