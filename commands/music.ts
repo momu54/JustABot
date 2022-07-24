@@ -4,6 +4,7 @@ import {
 	ChatInputCommandInteraction,
 	EmbedBuilder,
 	SelectMenuBuilder,
+	SelectMenuInteraction,
 	SelectMenuOptionBuilder,
 	SlashCommandBuilder,
 	SlashCommandStringOption,
@@ -96,6 +97,28 @@ module.exports = {
 			const embed = getsongembed(song as Song);
 			i.editReply({ embeds: [embed] });
 		}
+	},
+	executeMenu: async (i: SelectMenuInteraction, player: Player) => {
+		if (!i.guild) {
+			return;
+		}
+		if (!i.inCachedGuild()) {
+			return;
+		}
+		if (!i.member.voice.channel) {
+			i.reply({
+				content: 'You need to join a voice channel to execute this command.',
+				ephemeral: true,
+			});
+			return;
+		}
+		await i.deferUpdate();
+		const url = i.values[0];
+		const queue = player.createQueue(i.guild.id);
+		await queue.join(i.member.voice.channel?.id);
+		const song = await queue.play(url);
+		const embed = getsongembed(song);
+		i.editReply({ embeds: [embed], components: [] });
 	},
 };
 
