@@ -27,6 +27,11 @@ module.exports = {
 						.setDescription('URL or search query of the video.')
 						.setRequired(true)
 				)
+		)
+		.addSubcommand(
+			new SlashCommandSubcommandBuilder()
+				.setName('skip')
+				.setDescription('Skip the current song.')
 		),
 	execute: async (i: ChatInputCommandInteraction, player: Player) => {
 		if (!i.guild) {
@@ -47,7 +52,8 @@ module.exports = {
 			return;
 		}
 		const guildqueue = player.getQueue(i.guild.id);
-		if (i.options.getSubcommand() == 'play') {
+		const subcmd = i.options.getSubcommand();
+		if (subcmd == 'play') {
 			await i.deferReply({
 				ephemeral: false,
 			});
@@ -84,18 +90,37 @@ module.exports = {
 			}
 			const queue = player.createQueue(i.guild.id);
 			await queue.join(i.member.voice.channel?.id);
-			const song = await queue.play(keyword).catch((err) => {
-				console.error(err);
+			var song: Song;
+			try {
+				song = await queue.play(keyword);
+			} catch (err) {
 				if (!guildqueue) {
 					queue.stop();
 				}
-				i.reply({
-					content: 'There was an error while executing this command!',
-					ephemeral: true,
-				});
-			});
+				const errembed = new EmbedBuilder()
+					.setColor(0x000000)
+					.setTitle('error')
+					.setDescription("Can't find song");
+				i.editReply({ embeds: [errembed] });
+				return;
+			}
 			const embed = getsongembed(song as Song);
 			i.editReply({ embeds: [embed] });
+			return;
+		}
+		if (!guildqueue?.isPlaying) {
+			const errembed = new EmbedBuilder()
+				.setColor(0x000000)
+				.setTitle('error')
+				.setDescription('No songs are currently playing.');
+			i.reply({ embeds: [errembed] });
+			return;
+		}
+		if (subcmd == 'skip') {
+			const song = guildqueue.skip();
+			const embed = getsongembed(song);
+			embed.setTitle(`Skiped ${embed.data.title}`);
+			i.reply({ embeds: [embed] });
 		}
 	},
 	executeMenu: async (i: SelectMenuInteraction, player: Player) => {
@@ -118,7 +143,8 @@ module.exports = {
 		await queue.join(i.member.voice.channel?.id);
 		const song = await queue.play(url);
 		const embed = getsongembed(song);
-		i.editReply({ embeds: [embed], components: [] });
+		await i.editReply({ embeds: [embed], components: [] });
+		i.followUp({ content: 'a' });
 	},
 };
 
