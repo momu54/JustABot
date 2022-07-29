@@ -32,6 +32,11 @@ module.exports = {
 			new SlashCommandSubcommandBuilder()
 				.setName('skip')
 				.setDescription('Skip the current song.')
+		)
+		.addSubcommand(
+			new SlashCommandSubcommandBuilder()
+			    .setName('stop')
+				.setDescription('Stop the current player.')
 		),
 	execute: async (i: ChatInputCommandInteraction, player: Player) => {
 		if (!i.guild) {
@@ -121,6 +126,10 @@ module.exports = {
 			const embed = getsongembed(song);
 			embed.setTitle(`Skiped ${embed.data.title}`);
 			i.reply({ embeds: [embed] });
+		}else if(subcmd == 'stop') {
+			const embed = new EmbedBuilder()
+			    .setColor(0x000000)
+				.setTitle('stoped!')
 		}
 	},
 	executeMenu: async (i: SelectMenuInteraction, player: Player) => {
