@@ -68,26 +68,26 @@ module.exports = {
 				var menu = new SelectMenuBuilder()
 					.setCustomId('music.search')
 					.setPlaceholder('select result');
-				result.items.forEach((e) => {
-					if (e.type == 'video') {
+				for (const item of result.items) {
+					if (item.type == 'video') {
 						menu.addOptions(
 							new SelectMenuOptionBuilder()
-								.setLabel(e.title)
+								.setLabel(item.title)
 								.setDescription(
-									`🎤${e.author?.name || 'unknown'} ⏱️${e.duration} ⬆️${
-										e.uploadedAt
-									}`
+									`🎤${item.author?.name || 'unknown'} ⏱️${
+										item.duration
+									} ⬆️${item.uploadedAt}`
 								)
-								.setValue(e.url)
+								.setValue(item.url)
 						);
 					}
-				});
+				}
 				const row = new ActionRowBuilder<SelectMenuBuilder>().addComponents(menu);
 				const embed = new EmbedBuilder()
 					.setColor(0xffffff)
 					.setTitle('Search')
 					.setDescription('Please select a search result');
-				i.editReply({
+				await i.editReply({
 					embeds: [embed],
 					components: [row],
 				});
@@ -106,11 +106,11 @@ module.exports = {
 					.setColor(0xffffff)
 					.setTitle('error')
 					.setDescription("Can't find song");
-				i.editReply({ embeds: [errembed] });
+				await i.editReply({ embeds: [errembed] });
 				return;
 			}
 			const embed = getsongembed(song as Song);
-			i.editReply({ embeds: [embed] });
+			await i.editReply({ embeds: [embed] });
 			return;
 		}
 		if (!guildqueue?.isPlaying) {
@@ -118,7 +118,7 @@ module.exports = {
 				.setColor(0xffffff)
 				.setTitle('error')
 				.setDescription('No songs are currently playing.');
-			i.reply({ embeds: [errembed] });
+			await i.reply({ embeds: [errembed] });
 			return;
 		}
 		if (subcmd == 'skip') {
@@ -126,11 +126,11 @@ module.exports = {
 			const embed = getsongembed(song);
 			embed.setTitle(`Skiped ${embed.data.title}`);
 			guildqueue.skip();
-			i.reply({ embeds: [embed] });
+			await i.reply({ embeds: [embed] });
 		} else if (subcmd == 'stop') {
 			const embed = new EmbedBuilder().setColor(0xffffff).setTitle('stoped!');
 			guildqueue.stop();
-			i.reply({ embeds: [embed] });
+			await i.reply({ embeds: [embed] });
 		}
 	},
 	executeMenu: async (i: SelectMenuInteraction, player: Player) => {
@@ -171,5 +171,5 @@ function getsongembed(song: Song) {
 		.setColor(0xffffff)
 		.setTitle(song.name)
 		.setDescription(`> 🎤 ${song.author}\n> ⏱️ ${song.duration}\n> 🔗 ${song.url}`)
-		.setThumbnail(song.thumbnail);
+		.setImage(song.thumbnail);
 }
