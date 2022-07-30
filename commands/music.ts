@@ -35,7 +35,7 @@ module.exports = {
 		)
 		.addSubcommand(
 			new SlashCommandSubcommandBuilder()
-			    .setName('stop')
+				.setName('stop')
 				.setDescription('Stop the current player.')
 		),
 	execute: async (i: ChatInputCommandInteraction, player: Player) => {
@@ -84,7 +84,7 @@ module.exports = {
 				});
 				const row = new ActionRowBuilder<SelectMenuBuilder>().addComponents(menu);
 				const embed = new EmbedBuilder()
-					.setColor(0x000000)
+					.setColor(0xffffff)
 					.setTitle('Search')
 					.setDescription('Please select a search result');
 				i.editReply({
@@ -103,7 +103,7 @@ module.exports = {
 					queue.stop();
 				}
 				const errembed = new EmbedBuilder()
-					.setColor(0x000000)
+					.setColor(0xffffff)
 					.setTitle('error')
 					.setDescription("Can't find song");
 				i.editReply({ embeds: [errembed] });
@@ -115,7 +115,7 @@ module.exports = {
 		}
 		if (!guildqueue?.isPlaying) {
 			const errembed = new EmbedBuilder()
-				.setColor(0x000000)
+				.setColor(0xffffff)
 				.setTitle('error')
 				.setDescription('No songs are currently playing.');
 			i.reply({ embeds: [errembed] });
@@ -125,11 +125,12 @@ module.exports = {
 			const song = guildqueue.skip();
 			const embed = getsongembed(song);
 			embed.setTitle(`Skiped ${embed.data.title}`);
+			guildqueue.skip();
 			i.reply({ embeds: [embed] });
-		}else if(subcmd == 'stop') {
-			const embed = new EmbedBuilder()
-			    .setColor(0x000000)
-				.setTitle('stoped!')
+		} else if (subcmd == 'stop') {
+			const embed = new EmbedBuilder().setColor(0xffffff).setTitle('stoped!');
+			guildqueue.stop();
+			i.reply({ embeds: [embed] });
 		}
 	},
 	executeMenu: async (i: SelectMenuInteraction, player: Player) => {
@@ -153,7 +154,6 @@ module.exports = {
 		const song = await queue.play(url);
 		const embed = getsongembed(song);
 		await i.editReply({ embeds: [embed], components: [] });
-		i.followUp({ content: 'a' });
 	},
 };
 
@@ -168,7 +168,7 @@ function isUrl(s: string): Boolean {
 
 function getsongembed(song: Song) {
 	return new EmbedBuilder()
-		.setColor(0x000000)
+		.setColor(0xffffff)
 		.setTitle(song.name)
 		.setDescription(`> 🎤 ${song.author}\n> ⏱️ ${song.duration}\n> 🔗 ${song.url}`)
 		.setThumbnail(song.thumbnail);
