@@ -27,5 +27,5 @@ jobs:
     - run: tsc
     - uses: actions/upload-artifact@v3
       with:
-        name: artifact
+        name: jsfiles.zip
         path: out/
