@@ -1,2 +1,2 @@
 # MuYue-rewrite
-[![Build Typescript](https://github.com/YueMu1022/MuYue-rewrite/actions/workflows/node.js.yml/badge.svg?branch=main)](https://github.com/YueMu1022/MuYue-rewrite/actions/workflows/build.yml)
+[![Build Typescript](https://github.com/YueMu1022/MuYue-rewrite/actions/workflows/build.yml/badge.svg)](https://github.com/YueMu1022/MuYue-rewrite/actions/workflows/build.yml)
