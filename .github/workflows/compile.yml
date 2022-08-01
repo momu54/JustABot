@@ -1,12 +1,11 @@
-name: Build Typescript
+name: Compile typescript
 
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  build:
-
+  Compile:
     runs-on: ubuntu-latest
 
     strategy:
