@@ -1,12 +1,14 @@
-import { Player, Song } from 'discord-music-player';
+import { Player, RepeatMode, Song } from 'discord-music-player';
 import {
 	ActionRowBuilder,
+	bold,
 	ChatInputCommandInteraction,
 	EmbedBuilder,
 	SelectMenuBuilder,
 	SelectMenuInteraction,
 	SelectMenuOptionBuilder,
 	SlashCommandBuilder,
+	SlashCommandNumberOption,
 	SlashCommandStringOption,
 	SlashCommandSubcommandBuilder,
 } from 'discord.js';
@@ -37,6 +39,29 @@ module.exports = {
 			new SlashCommandSubcommandBuilder()
 				.setName('stop')
 				.setDescription('Stop the current player.')
+		)
+		.addSubcommand(
+			new SlashCommandSubcommandBuilder()
+				.setName('loop')
+				.setDescription('Toggle repeat mode.')
+				.addNumberOption(
+					new SlashCommandNumberOption()
+						.setName('mode')
+						.setDescription('Repeat mode')
+						.setRequired(true)
+						.addChoices({
+							name: 'Repeat track',
+							value: RepeatMode.SONG,
+						})
+						.addChoices({
+							name: 'Repeat queue',
+							value: RepeatMode.QUEUE,
+						})
+						.addChoices({
+							name: 'No repeat',
+							value: RepeatMode.DISABLED,
+						})
+				)
 		),
 	execute: async (i: ChatInputCommandInteraction, player: Player) => {
 		if (!i.guild) {
@@ -123,13 +148,23 @@ module.exports = {
 		}
 		if (subcmd == 'skip') {
 			const song = guildqueue.skip();
+			guildqueue.skip();
 			const embed = getsongembed(song);
 			embed.setTitle(`Skiped ${embed.data.title}`);
-			guildqueue.skip();
 			await i.reply({ embeds: [embed] });
 		} else if (subcmd == 'stop') {
-			const embed = new EmbedBuilder().setColor(0xffffff).setTitle('stoped!');
 			guildqueue.stop();
+			const embed = new EmbedBuilder().setColor(0xffffff).setTitle('stoped!');
+			await i.reply({ embeds: [embed] });
+		} else if (subcmd == 'loop') {
+			const mode = i.options.getNumber('mode', true);
+			guildqueue.setRepeatMode(mode);
+			const embed = new EmbedBuilder()
+				.setColor(0xffffff)
+				.setTitle('loop')
+				.setDescription(
+					`Success set repeat mode to ${bold(getRepeatMode(mode))}`
+				);
 			await i.reply({ embeds: [embed] });
 		}
 	},
@@ -172,4 +207,14 @@ function getsongembed(song: Song) {
 		.setTitle(song.name)
 		.setDescription(`> 🎤 ${song.author}\n> ⏱️ ${song.duration}\n> 🔗 ${song.url}`)
 		.setImage(song.thumbnail);
+}
+
+function getRepeatMode(mode: RepeatMode): string {
+	if (mode === RepeatMode.SONG) {
+		return 'Repeat track';
+	} else if (mode === RepeatMode.QUEUE) {
+		return 'Repeat queue';
+	} else {
+		return 'No repeat';
+	}
 }
