@@ -85,7 +85,7 @@ module.exports = {
 		const subcmd = i.options.getSubcommand();
 		if (subcmd == 'play') {
 			await i.deferReply({
-				ephemeral: false,
+				ephemeral: true,
 			});
 			const keyword = i.options.getString('keyword', true);
 			if (!isUrl(keyword)) {
@@ -135,6 +135,10 @@ module.exports = {
 				return;
 			}
 			const embed = getsongembed(song as Song);
+			embed.setAuthor({
+				name: i.user.tag,
+				iconURL: i.user.displayAvatarURL(),
+			});
 			await i.editReply({ embeds: [embed] });
 			return;
 		}
@@ -182,13 +186,25 @@ module.exports = {
 			});
 			return;
 		}
-		await i.deferUpdate();
 		const url = i.values[0];
+		const selection = i.component.options.filter((item) => {
+			return item.value == url;
+		})[0];
+		const row = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+			SelectMenuBuilder.from(i.component)
+				.setDisabled(true)
+				.setPlaceholder(selection.label)
+		);
+		await i.update({ components: [row] });
 		const queue = player.createQueue(i.guild.id);
 		await queue.join(i.member.voice.channel?.id);
 		const song = await queue.play(url);
 		const embed = getsongembed(song);
-		await i.editReply({ embeds: [embed], components: [] });
+		embed.setAuthor({
+			name: i.user.tag,
+			iconURL: i.user.displayAvatarURL(),
+		});
+		await i.channel?.send({ embeds: [embed] });
 	},
 };
 
