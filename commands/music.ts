@@ -62,6 +62,11 @@ module.exports = {
 							value: RepeatMode.DISABLED,
 						})
 				)
+		)
+		.addSubcommand(
+			new SlashCommandSubcommandBuilder()
+				.setName('volume')
+				.setDescription('Shows how to adjust the volume.')
 		),
 	execute: async (i: ChatInputCommandInteraction, player: Player) => {
 		if (!i.guild) {
@@ -170,6 +175,17 @@ module.exports = {
 					`Success set repeat mode to ${bold(getRepeatMode(mode))}`
 				);
 			await i.reply({ embeds: [embed] });
+		} else if (subcmd == 'volume') {
+			const embed = new EmbedBuilder()
+				.setColor(0xffffff)
+				.setTitle('volume')
+				.setDescription(
+					'Right-click on a bot in a voice channel to adjust volume'
+				)
+				.setImage(
+					'https://cdn.discordapp.com/attachments/985143172655091792/1004930485706838106/7d75c2f90abb256b.gif'
+				);
+			i.reply({ embeds: [embed], ephemeral: true });
 		}
 	},
 	executeMenu: async (i: SelectMenuInteraction, player: Player) => {
