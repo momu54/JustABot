@@ -67,6 +67,11 @@ module.exports = {
 			new SlashCommandSubcommandBuilder()
 				.setName('volume')
 				.setDescription('Shows how to adjust the volume.')
+		)
+		.addSubcommand(
+			new SlashCommandSubcommandBuilder()
+				.setName('clear')
+				.setDescription('Clear the current queue.')
 		),
 	execute: async (i: ChatInputCommandInteraction, player: Player) => {
 		if (!i.guild) {
@@ -186,6 +191,10 @@ module.exports = {
 					'https://cdn.discordapp.com/attachments/985143172655091792/1004930485706838106/7d75c2f90abb256b.gif'
 				);
 			i.reply({ embeds: [embed], ephemeral: true });
+		} else if (subcmd == 'clear') {
+			guildqueue.clearQueue();
+			const embed = new EmbedBuilder().setColor(0xffffff).setTitle('cleared!');
+			i.reply({ embeds: [embed] });
 		}
 	},
 	executeMenu: async (i: SelectMenuInteraction, player: Player) => {
@@ -233,7 +242,7 @@ function isUrl(s: string): Boolean {
 	}
 }
 
-function getsongembed(song: Song) {
+function getsongembed(song: Song): EmbedBuilder {
 	return new EmbedBuilder()
 		.setColor(0xffffff)
 		.setTitle(song.name)
