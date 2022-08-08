@@ -66,7 +66,7 @@ client.on('interactionCreate', async (i) => {
 				await commandFile.execute(i, player);
 			} catch (error) {
 				console.error(error);
-				i.reply({
+				await i.reply({
 					content: 'There was an error while executing this command!',
 					ephemeral: true,
 				});
@@ -78,10 +78,10 @@ client.on('interactionCreate', async (i) => {
 		const commandFile = commands.get(commandName) as CommandType;
 		if (i.componentType == ComponentType.Button) {
 			try {
-				await commandFile.executeBtn?.(i);
+				await commandFile.executeBtn?.(i, player);
 			} catch (error) {
 				console.error(error);
-				i.reply({
+				await i.reply({
 					content: 'There was an error while executing this command!',
 					ephemeral: true,
 				});
@@ -92,7 +92,7 @@ client.on('interactionCreate', async (i) => {
 				await commandFile.executeMenu?.(i, player);
 			} catch (error) {
 				console.error(error);
-				i.reply({
+				await i.reply({
 					content: 'There was an error while executing this command!',
 					ephemeral: true,
 				});

@@ -1,7 +1,10 @@
-import { Player, RepeatMode, Song } from 'discord-music-player';
+import { Player, Playlist, RepeatMode, Song } from 'discord-music-player';
 import {
 	ActionRowBuilder,
 	bold,
+	ButtonBuilder,
+	ButtonInteraction,
+	ButtonStyle,
 	ChatInputCommandInteraction,
 	EmbedBuilder,
 	SelectMenuBuilder,
@@ -72,6 +75,16 @@ module.exports = {
 			new SlashCommandSubcommandBuilder()
 				.setName('clear')
 				.setDescription('Clear the current queue.')
+		)
+		.addSubcommand(
+			new SlashCommandSubcommandBuilder()
+				.setName('shuffle')
+				.setDescription('Shuffles the Queue.')
+		)
+		.addSubcommand(
+			new SlashCommandSubcommandBuilder()
+				.setName('queue')
+				.setDescription('Shows the current queue.')
 		),
 	execute: async (i: ChatInputCommandInteraction, player: Player) => {
 		if (!i.guild) {
@@ -94,11 +107,11 @@ module.exports = {
 		const guildqueue = player.getQueue(i.guild.id);
 		const subcmd = i.options.getSubcommand();
 		if (subcmd == 'play') {
-			await i.deferReply({
-				ephemeral: true,
-			});
 			const keyword = i.options.getString('keyword', true);
 			if (!isUrl(keyword)) {
+				await i.deferReply({
+					ephemeral: true,
+				});
 				const result = await ytsr(keyword, { limit: 25 });
 				var menu = new SelectMenuBuilder()
 					.setCustomId('music.search')
@@ -128,8 +141,35 @@ module.exports = {
 				});
 				return;
 			}
+			await i.deferReply();
 			const queue = player.createQueue(i.guild.id);
 			await queue.join(i.member.voice.channel?.id);
+			if (keyword.includes('/playlist/') || keyword.includes('&list=')) {
+				var list: Playlist;
+				try {
+					list = await queue.playlist(keyword);
+				} catch (err) {
+					if (!guildqueue) {
+						queue.stop();
+					}
+					const errembed = new EmbedBuilder()
+						.setColor(0xffffff)
+						.setTitle('error')
+						.setDescription("Can't find playlist.");
+					await i.editReply({ embeds: [errembed] });
+					return;
+				}
+				const embed = new EmbedBuilder()
+					.setColor(0xffffff)
+					.setTitle(list.name)
+					.setDescription(`> 👤 ${list.author}\n> 🔗 ${list.url}`);
+				embed.setAuthor({
+					name: i.user.tag,
+					iconURL: i.user.displayAvatarURL(),
+				});
+				await i.editReply({ embeds: [embed] });
+				return;
+			}
 			var song: Song;
 			try {
 				song = await queue.play(keyword);
@@ -140,11 +180,11 @@ module.exports = {
 				const errembed = new EmbedBuilder()
 					.setColor(0xffffff)
 					.setTitle('error')
-					.setDescription("Can't find song");
+					.setDescription("Can't find song.");
 				await i.editReply({ embeds: [errembed] });
 				return;
 			}
-			const embed = getsongembed(song as Song);
+			const embed = getsongembed(song);
 			embed.setAuthor({
 				name: i.user.tag,
 				iconURL: i.user.displayAvatarURL(),
@@ -190,11 +230,63 @@ module.exports = {
 				.setImage(
 					'https://cdn.discordapp.com/attachments/985143172655091792/1004930485706838106/7d75c2f90abb256b.gif'
 				);
-			i.reply({ embeds: [embed], ephemeral: true });
+			await i.reply({ embeds: [embed], ephemeral: true });
 		} else if (subcmd == 'clear') {
 			guildqueue.clearQueue();
 			const embed = new EmbedBuilder().setColor(0xffffff).setTitle('cleared!');
-			i.reply({ embeds: [embed] });
+			await i.reply({ embeds: [embed] });
+		} else if (subcmd == 'shuffle') {
+			guildqueue.shuffle();
+			const embed = new EmbedBuilder().setColor(0xffffff).setTitle('shuffled!');
+			await i.reply({ embeds: [embed] });
+		} else if (subcmd == 'queue') {
+			const songs = guildqueue.songs;
+			const lastpage = Math.floor(songs.length / 10) + 1;
+			const embed = new EmbedBuilder()
+				.setColor(0xffffff)
+				.setTitle('queue')
+				.setFooter({
+					text: `pages 1/${lastpage}`,
+				});
+			var desc = '';
+			for (const song of songs) {
+				const index = songs.indexOf(song) + 1;
+				desc += `${index}.[${song.name}](${song.url})\n`;
+				if (index == 10) {
+					break;
+				}
+			}
+			embed.setDescription(desc);
+			const row = new ActionRowBuilder<ButtonBuilder>()
+				.addComponents(
+					new ButtonBuilder()
+						.setCustomId('music.queue.firstpage')
+						.setStyle(ButtonStyle.Primary)
+						.setEmoji('<:ouble_lef:1006009376768790668>')
+						.setDisabled(true)
+				)
+				.addComponents(
+					new ButtonBuilder()
+						.setCustomId('music.queue.prepage.0')
+						.setStyle(ButtonStyle.Primary)
+						.setEmoji('<:ef:1006009401150283887>')
+						.setDisabled(true)
+				)
+				.addComponents(
+					new ButtonBuilder()
+						.setCustomId(`music.queue.nextpage.2`)
+						.setStyle(ButtonStyle.Primary)
+						.setEmoji('<:igh:1006008780334579803>')
+						.setDisabled(lastpage == 1 ? true : false)
+				)
+				.addComponents(
+					new ButtonBuilder()
+						.setCustomId('music.queue.lastpage')
+						.setStyle(ButtonStyle.Primary)
+						.setEmoji('<:ouble_righ:1006009427784122368>')
+						.setDisabled(lastpage == 1 ? true : false)
+				);
+			await i.reply({ embeds: [embed], components: [row] });
 		}
 	},
 	executeMenu: async (i: SelectMenuInteraction, player: Player) => {
@@ -230,6 +322,57 @@ module.exports = {
 			iconURL: i.user.displayAvatarURL(),
 		});
 		await i.channel?.send({ embeds: [embed] });
+	},
+	executeBtn: async (i: ButtonInteraction, player: Player) => {
+		const data = i.customId.split('.');
+		const guildqueue = player.getQueue(i.guild?.id as string);
+		if (data[1] == 'queue') {
+			if (!guildqueue?.isPlaying) {
+				const errembed = new EmbedBuilder()
+					.setColor(0xffffff)
+					.setTitle('error')
+					.setDescription('No songs are currently playing.');
+				await i.reply({ embeds: [errembed] });
+				return;
+			}
+			const songs = guildqueue.songs;
+			const lastpage = Math.floor(songs.length / 10) + 1;
+			if (data[2] == 'firstpage') {
+				const embed = new EmbedBuilder()
+					.setColor(0xffffff)
+					.setTitle('queue')
+					.setFooter({
+						text: `pages 1/${lastpage}`,
+					});
+				var desc = '';
+				for (const song of guildqueue.songs) {
+					const index = guildqueue.songs.indexOf(song) + 1;
+					desc += `${index}.[${song.name}](${song.url})\n`;
+					if (index == 10) {
+						break;
+					}
+				}
+				embed.setDescription(desc);
+				await i.update({ embeds: [embed] });
+			} else if (data[2] == 'lastpage') {
+				const embed = new EmbedBuilder()
+					.setColor(0xffffff)
+					.setTitle('queue')
+					.setFooter({
+						text: `pages ${lastpage}/${lastpage}`,
+					});
+				var desc = '';
+				for (const song of guildqueue.songs) {
+					const index = guildqueue.songs.indexOf(song) + 1;
+					desc += `${index}.[${song.name}](${song.url})\n`;
+					if (index == 10) {
+						break;
+					}
+				}
+				embed.setDescription(desc);
+				await i.update({ embeds: [embed] });
+			}
+		}
 	},
 };
 
