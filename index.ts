@@ -29,7 +29,6 @@ const player = new Player(client, {
 var commands = new Collection();
 const commandsPath = path.join(__dirname, 'commands');
 const commandsFile = fs.readdirSync(commandsPath);
-var commandslist: SlashCommandBuilder[] = [];
 
 interface CommandType {
 	data: SlashCommandBuilder;
@@ -48,10 +47,9 @@ async function loadcommand() {
 		const filePath = path.join(commandsPath, file);
 		const command = require(filePath) as CommandType;
 		commands.set(command.data.name, command);
-		commandslist.push(command.data);
 	}
 	console.log('Started refreshing application (/) commands.');
-	await client.application?.commands.set(commandslist);
+	await client.application?.commands.set(Object.values(commands));
 	console.log('Successfully reloaded application (/) commands.');
 }
 
