@@ -1,10 +1,13 @@
 import {
 	ApplicationCommandType,
+	ButtonInteraction,
+	ChatInputCommandInteraction,
 	Client,
 	Collection,
 	ComponentType,
 	GatewayIntentBits,
 	InteractionType,
+	SelectMenuInteraction,
 	SlashCommandBuilder,
 } from 'discord.js';
 import 'dotenv/config';
@@ -32,9 +35,9 @@ const commandsFile = fs.readdirSync(commandsPath);
 
 interface CommandType {
 	data: SlashCommandBuilder;
-	execute: Function;
-	executeBtn?: Function;
-	executeMenu?: Function;
+	execute(i: ChatInputCommandInteraction, player: Player): void;
+	executeBtn?(i: ButtonInteraction, player: Player): void;
+	executeMenu?(i: SelectMenuInteraction, player: Player): void;
 }
 
 client.on('ready', () => {
