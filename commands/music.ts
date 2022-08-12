@@ -2,8 +2,6 @@ import { Player, Playlist, RepeatMode, Song } from 'discord-music-player';
 import {
 	ActionRowBuilder,
 	bold,
-	ButtonBuilder,
-	ButtonInteraction,
 	ButtonStyle,
 	ChatInputCommandInteraction,
 	EmbedBuilder,
@@ -15,6 +13,11 @@ import {
 	SlashCommandStringOption,
 	SlashCommandSubcommandBuilder,
 } from 'discord.js';
+import {
+	InteractionPagination,
+	NextPageButton,
+	PreviousPageButton,
+} from 'djs-button-pages';
 import { URL } from 'url';
 import ytsr from 'ytsr';
 
@@ -241,52 +244,41 @@ module.exports = {
 			await i.reply({ embeds: [embed] });
 		} else if (subcmd == 'queue') {
 			const songs = guildqueue.songs;
-			const lastpage = Math.floor(songs.length / 10) + 1;
-			const embed = new EmbedBuilder()
-				.setColor(0xffffff)
-				.setTitle('queue')
-				.setFooter({
-					text: `pages 1/${lastpage}`,
-				});
-			var desc = '';
-			for (const song of songs) {
-				const index = songs.indexOf(song) + 1;
-				desc += `${index}.[${song.name}](${song.url})\n`;
-				if (index == 10) {
-					break;
+			const pagelength = Math.ceil(songs.length / 10);
+			var pages: EmbedBuilder[] = [];
+			for (let i = 0; i < pagelength; i++) {
+				var desc = '';
+				for (let index = 10 * i; index < index + 10; index++) {
+					const song = songs[index];
+					if (!song) break;
+					desc += `${index}. [${song.name}](${song.url})`;
 				}
-			}
-			embed.setDescription(desc);
-			const row = new ActionRowBuilder<ButtonBuilder>()
-				.addComponents(
-					new ButtonBuilder()
-						.setCustomId('music.queue.firstpage')
-						.setStyle(ButtonStyle.Primary)
-						.setEmoji('<:ouble_lef:1006009376768790668>')
-						.setDisabled(true)
-				)
-				.addComponents(
-					new ButtonBuilder()
-						.setCustomId('music.queue.prepage.0')
-						.setStyle(ButtonStyle.Primary)
-						.setEmoji('<:ef:1006009401150283887>')
-						.setDisabled(true)
-				)
-				.addComponents(
-					new ButtonBuilder()
-						.setCustomId(`music.queue.nextpage.2`)
-						.setStyle(ButtonStyle.Primary)
-						.setEmoji('<:igh:1006008780334579803>')
-						.setDisabled(lastpage == 1 ? true : false)
-				)
-				.addComponents(
-					new ButtonBuilder()
-						.setCustomId('music.queue.lastpage')
-						.setStyle(ButtonStyle.Primary)
-						.setEmoji('<:ouble_righ:1006009427784122368>')
-						.setDisabled(lastpage == 1 ? true : false)
+				pages.push(
+					new EmbedBuilder()
+						.setColor(0xffffff)
+						.setTitle('queue')
+						.setDescription(desc)
+						.setFooter({
+							text: `Pages: ${i}/${pagelength}`,
+						})
 				);
-			await i.reply({ embeds: [embed], components: [row] });
+			}
+			const buttons = [
+				new PreviousPageButton().setStyle({
+					custom_id: 'music.queue.prev',
+					emoji: '➡️',
+					style: ButtonStyle.Primary,
+				}),
+				new NextPageButton().setStyle({
+					custom_id: 'music.queue.next',
+					emoji: '⬅️',
+					style: ButtonStyle.Primary,
+				}),
+			];
+			const pagination = new InteractionPagination()
+				.setButtons(buttons)
+				.setEmbeds(pages);
+			pagination.send(i);
 		}
 	},
 	executeMenu: async (i: SelectMenuInteraction, player: Player) => {
@@ -322,57 +314,6 @@ module.exports = {
 			iconURL: i.user.displayAvatarURL(),
 		});
 		await i.channel?.send({ embeds: [embed] });
-	},
-	executeBtn: async (i: ButtonInteraction, player: Player) => {
-		const data = i.customId.split('.');
-		const guildqueue = player.getQueue(i.guild?.id as string);
-		if (data[1] == 'queue') {
-			if (!guildqueue?.isPlaying) {
-				const errembed = new EmbedBuilder()
-					.setColor(0xffffff)
-					.setTitle('error')
-					.setDescription('No songs are currently playing.');
-				await i.reply({ embeds: [errembed] });
-				return;
-			}
-			const songs = guildqueue.songs;
-			const lastpage = Math.floor(songs.length / 10) + 1;
-			if (data[2] == 'firstpage') {
-				const embed = new EmbedBuilder()
-					.setColor(0xffffff)
-					.setTitle('queue')
-					.setFooter({
-						text: `pages 1/${lastpage}`,
-					});
-				var desc = '';
-				for (const song of guildqueue.songs) {
-					const index = guildqueue.songs.indexOf(song) + 1;
-					desc += `${index}.[${song.name}](${song.url})\n`;
-					if (index == 10) {
-						break;
-					}
-				}
-				embed.setDescription(desc);
-				await i.update({ embeds: [embed] });
-			} else if (data[2] == 'lastpage') {
-				const embed = new EmbedBuilder()
-					.setColor(0xffffff)
-					.setTitle('queue')
-					.setFooter({
-						text: `pages ${lastpage}/${lastpage}`,
-					});
-				var desc = '';
-				for (const song of guildqueue.songs) {
-					const index = guildqueue.songs.indexOf(song) + 1;
-					desc += `${index}.[${song.name}](${song.url})\n`;
-					if (index == 10) {
-						break;
-					}
-				}
-				embed.setDescription(desc);
-				await i.update({ embeds: [embed] });
-			}
-		}
 	},
 };
 
