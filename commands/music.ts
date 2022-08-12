@@ -2,6 +2,7 @@ import { Player, Playlist, RepeatMode, Song } from 'discord-music-player';
 import {
 	ActionRowBuilder,
 	bold,
+	ButtonInteraction,
 	ButtonStyle,
 	ChatInputCommandInteraction,
 	EmbedBuilder,
@@ -248,10 +249,12 @@ module.exports = {
 			var pages: EmbedBuilder[] = [];
 			for (let i = 0; i < pagelength; i++) {
 				var desc = '';
-				for (let index = 10 * i; index < index + 10; index++) {
+				const start = 10 * i;
+				const end = start + 10;
+				for (let index = start; index < end; index++) {
 					const song = songs[index];
 					if (!song) break;
-					desc += `${index}. [${song.name}](${song.url})`;
+					desc += `${index + 1}. [${song.name}](${song.url})\n`;
 				}
 				pages.push(
 					new EmbedBuilder()
@@ -266,18 +269,19 @@ module.exports = {
 			const buttons = [
 				new PreviousPageButton().setStyle({
 					custom_id: 'music.queue.prev',
-					emoji: '➡️',
+					emoji: '⬅️',
 					style: ButtonStyle.Primary,
 				}),
 				new NextPageButton().setStyle({
 					custom_id: 'music.queue.next',
-					emoji: '⬅️',
+					emoji: '➡️',
 					style: ButtonStyle.Primary,
 				}),
 			];
-			const pagination = new InteractionPagination()
+			var pagination = new InteractionPagination()
 				.setButtons(buttons)
-				.setEmbeds(pages);
+				.setEmbeds(pages)
+				.setTime(900000);
 			pagination.send(i);
 		}
 	},
@@ -314,6 +318,13 @@ module.exports = {
 			iconURL: i.user.displayAvatarURL(),
 		});
 		await i.channel?.send({ embeds: [embed] });
+	},
+	executeBtn: async (i: ButtonInteraction) => {
+		if (i.customId.startsWith('music.queue')) {
+			if (Date.now() / 1000 - i.createdTimestamp >= 900000) {
+				console.log('a');
+			}
+		}
 	},
 };
 
