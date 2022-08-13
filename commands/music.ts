@@ -2,11 +2,11 @@ import { Player, Playlist, RepeatMode, Song } from 'discord-music-player';
 import {
 	ActionRowBuilder,
 	bold,
-	ButtonBuilder,
+	//ButtonBuilder,
 	ButtonInteraction,
 	ButtonStyle,
 	ChatInputCommandInteraction,
-	ComponentType,
+	//ComponentType,
 	EmbedBuilder,
 	SelectMenuBuilder,
 	SelectMenuInteraction,
