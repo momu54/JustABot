@@ -2,11 +2,8 @@ import { Player, Playlist, RepeatMode, Song } from 'discord-music-player';
 import {
 	ActionRowBuilder,
 	bold,
-	//ButtonBuilder,
-	ButtonInteraction,
 	ButtonStyle,
 	ChatInputCommandInteraction,
-	//ComponentType,
 	EmbedBuilder,
 	SelectMenuBuilder,
 	SelectMenuInteraction,
@@ -291,7 +288,7 @@ module.exports = {
 			var pagination = new InteractionPagination()
 				.setButtons(buttons)
 				.setEmbeds(pages)
-				.setTime(5000);
+				.setTime(880000);
 			pagination.setOnStopAction(async () => {
 				console.log('stoped!');
 				const response = await i.fetchReply();
@@ -305,15 +302,17 @@ module.exports = {
 		}
 	},
 	executeMenu: async (i: SelectMenuInteraction, player: Player) => {
-		if (!i.guild) {
-			return;
-		}
-		if (!i.inCachedGuild()) {
-			return;
-		}
+		if (!i.guild) return;
+		if (!i.inCachedGuild()) return;
 		if (!i.member.voice.channel) {
+			const errembed = new EmbedBuilder()
+				.setColor(0xff0000)
+				.setTitle('error!')
+				.setDescription(
+					'You need to join a voice channel to execute this command.'
+				);
 			i.reply({
-				content: 'You need to join a voice channel to execute this command.',
+				embeds: [errembed],
 				ephemeral: true,
 			});
 			return;
