@@ -1,31 +1,31 @@
 {
-    "name": "muyue-rewrite",
-    "version": "1.0.0",
-    "description": "",
-    "main": "index.ts",
-    "scripts": {
-        "start": "nodemon ./index.ts"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/YueMu1022/MuYue-rewrite.git"
-    },
-    "author": "",
-    "license": "AGPL-3.0-or-later",
-    "bugs": {
-        "url": "https://github.com/YueMu1022/MuYue-rewrite/issues"
-    },
-    "homepage": "https://github.com/YueMu1022/MuYue-rewrite#readme",
-    "dependencies": {
-        "@types/node": "^18.6.5",
-        "discord-music-player": "^9.0.2",
-        "discord.js": "^14.1.2",
-        "djs-button-pages": "^2.1.3",
-        "dotenv": "^16.0.1",
-        "nodemon": "^2.0.19",
-        "ts-node": "^10.9.1",
-        "typescript": "^4.7.4",
-        "ytdl-core": "^4.9.1",
-        "ytsr": "^3.8.0"
-    }
+	"name": "muyue-rewrite",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.ts",
+	"scripts": {
+		"start": "nodemon ./index.ts"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/YueMu1022/MuYue-rewrite.git"
+	},
+	"author": "",
+	"license": "AGPL-3.0-or-later",
+	"bugs": {
+		"url": "https://github.com/YueMu1022/MuYue-rewrite/issues"
+	},
+	"homepage": "https://github.com/YueMu1022/MuYue-rewrite#readme",
+	"dependencies": {
+		"@types/node": "^18.7.2",
+		"discord-music-player": "^9.0.2",
+		"discord.js": "14.2",
+		"djs-button-pages": "^2.1.3",
+		"dotenv": "^16.0.1",
+		"nodemon": "^2.0.19",
+		"ts-node": "^10.9.1",
+		"typescript": "^4.7.4",
+		"ytdl-core": "^4.10.0",
+		"ytsr": "^3.8.0"
+	}
 }

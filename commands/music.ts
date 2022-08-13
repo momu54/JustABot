@@ -2,9 +2,11 @@ import { Player, Playlist, RepeatMode, Song } from 'discord-music-player';
 import {
 	ActionRowBuilder,
 	bold,
+	ButtonBuilder,
 	ButtonInteraction,
 	ButtonStyle,
 	ChatInputCommandInteraction,
+	ComponentType,
 	EmbedBuilder,
 	SelectMenuBuilder,
 	SelectMenuInteraction,
@@ -262,19 +264,19 @@ module.exports = {
 						.setTitle('queue')
 						.setDescription(desc)
 						.setFooter({
-							text: `Pages: ${i}/${pagelength}`,
+							text: `Pages: ${i + 1}/${pagelength}`,
 						})
 				);
 			}
 			const buttons = [
 				new PreviousPageButton().setStyle({
 					custom_id: 'music.queue.prev',
-					emoji: '⬅️',
+					emoji: '<:left:1007601756705935440>',
 					style: ButtonStyle.Primary,
 				}),
 				new NextPageButton().setStyle({
 					custom_id: 'music.queue.next',
-					emoji: '➡️',
+					emoji: '<:right:1007601758392033321>',
 					style: ButtonStyle.Primary,
 				}),
 			];
@@ -282,6 +284,25 @@ module.exports = {
 				.setButtons(buttons)
 				.setEmbeds(pages)
 				.setTime(900000);
+			/*pagination.setOnStopAction(async () => {
+				console.log('stoped!');
+				const msg = await i.fetchReply();
+				const row = msg.components[0];
+				const prebtn = row.components[0];
+				const nextbtn = row.components[1];
+				if (
+					prebtn.type != ComponentType.Button ||
+					nextbtn.type != ComponentType.Button
+				)
+					return;
+				const prebtnbuilder = ButtonBuilder.from(prebtn);
+				const nextbtnbuilder = ButtonBuilder.from(nextbtn);
+				const newrow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+					prebtnbuilder,
+					nextbtnbuilder
+				);
+				i.editReply({ components: [newrow] });
+			});*/
 			pagination.send(i);
 		}
 	},
@@ -300,13 +321,13 @@ module.exports = {
 			return;
 		}
 		const url = i.values[0];
-		const selection = i.component.options.filter((item) => {
+		const selection = i.component.options.find((item) => {
 			return item.value == url;
-		})[0];
+		});
 		const row = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
 			SelectMenuBuilder.from(i.component)
 				.setDisabled(true)
-				.setPlaceholder(selection.label)
+				.setPlaceholder(selection?.label as string)
 		);
 		await i.update({ components: [row] });
 		const queue = player.createQueue(i.guild.id);
