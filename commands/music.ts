@@ -94,18 +94,26 @@ module.exports = {
 		),
 	execute: async (i: ChatInputCommandInteraction, player: Player) => {
 		if (!i.guild) {
+			const errembed = new EmbedBuilder()
+				.setColor(0xff0000)
+				.setTitle('error!')
+				.setDescription('You cannot execute this command in DM.');
 			i.reply({
-				content: 'You cannot execute this command in DM.',
+				embeds: [errembed],
 				ephemeral: true,
 			});
 			return;
 		}
-		if (!i.inCachedGuild()) {
-			return;
-		}
+		if (!i.inCachedGuild()) return;
 		if (!i.member.voice.channel) {
+			const errembed = new EmbedBuilder()
+				.setColor(0xff0000)
+				.setTitle('error!')
+				.setDescription(
+					'You need to join a voice channel to execute this command.'
+				);
 			i.reply({
-				content: 'You need to join a voice channel to execute this command.',
+				embeds: [errembed],
 				ephemeral: true,
 			});
 			return;
@@ -159,14 +167,14 @@ module.exports = {
 						queue.stop();
 					}
 					const errembed = new EmbedBuilder()
-						.setColor(0xffffff)
-						.setTitle('error')
+						.setColor(0xff0000)
+						.setTitle('error!')
 						.setDescription("Can't find playlist.");
 					await i.editReply({ embeds: [errembed] });
 					return;
 				}
 				const embed = new EmbedBuilder()
-					.setColor(0xffffff)
+					.setColor(0xff0000)
 					.setTitle(list.name)
 					.setDescription(`> 👤 ${list.author}\n> 🔗 ${list.url}`);
 				embed.setAuthor({
@@ -184,8 +192,8 @@ module.exports = {
 					queue.stop();
 				}
 				const errembed = new EmbedBuilder()
-					.setColor(0xffffff)
-					.setTitle('error')
+					.setColor(0xff0000)
+					.setTitle('error!')
 					.setDescription("Can't find song.");
 				await i.editReply({ embeds: [errembed] });
 				return;
@@ -197,11 +205,22 @@ module.exports = {
 			});
 			await i.editReply({ embeds: [embed] });
 			return;
+		} else if (subcmd == 'volume') {
+			const embed = new EmbedBuilder()
+				.setColor(0xff0000)
+				.setTitle('volume')
+				.setDescription(
+					'Right-click on a bot in a voice channel to adjust volume'
+				)
+				.setImage(
+					'https://cdn.discordapp.com/attachments/985143172655091792/1004930485706838106/7d75c2f90abb256b.gif'
+				);
+			await i.reply({ embeds: [embed], ephemeral: true });
 		}
 		if (!guildqueue?.isPlaying) {
 			const errembed = new EmbedBuilder()
-				.setColor(0xffffff)
-				.setTitle('error')
+				.setColor(0xff0000)
+				.setTitle('error!')
 				.setDescription('No songs are currently playing.');
 			await i.reply({ embeds: [errembed] });
 			return;
@@ -226,17 +245,6 @@ module.exports = {
 					`Success set repeat mode to ${bold(getRepeatMode(mode))}`
 				);
 			await i.reply({ embeds: [embed] });
-		} else if (subcmd == 'volume') {
-			const embed = new EmbedBuilder()
-				.setColor(0xffffff)
-				.setTitle('volume')
-				.setDescription(
-					'Right-click on a bot in a voice channel to adjust volume'
-				)
-				.setImage(
-					'https://cdn.discordapp.com/attachments/985143172655091792/1004930485706838106/7d75c2f90abb256b.gif'
-				);
-			await i.reply({ embeds: [embed], ephemeral: true });
 		} else if (subcmd == 'clear') {
 			guildqueue.clearQueue();
 			const embed = new EmbedBuilder().setColor(0xffffff).setTitle('cleared!');
@@ -283,26 +291,16 @@ module.exports = {
 			var pagination = new InteractionPagination()
 				.setButtons(buttons)
 				.setEmbeds(pages)
-				.setTime(900000);
-			/*pagination.setOnStopAction(async () => {
+				.setTime(5000);
+			pagination.setOnStopAction(async () => {
 				console.log('stoped!');
-				const msg = await i.fetchReply();
-				const row = msg.components[0];
-				const prebtn = row.components[0];
-				const nextbtn = row.components[1];
-				if (
-					prebtn.type != ComponentType.Button ||
-					nextbtn.type != ComponentType.Button
-				)
-					return;
-				const prebtnbuilder = ButtonBuilder.from(prebtn);
-				const nextbtnbuilder = ButtonBuilder.from(nextbtn);
-				const newrow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-					prebtnbuilder,
-					nextbtnbuilder
-				);
-				i.editReply({ components: [newrow] });
-			});*/
+				const response = await i.fetchReply();
+				const embed = EmbedBuilder.from(response.embeds[0]).setColor(0xff0000);
+				embed.setFooter({
+					text: `${embed.data.footer?.text} This menu has expired, please use '/music queue' again.`,
+				});
+				i.editReply({ embeds: [embed] });
+			});
 			pagination.send(i);
 		}
 	},
@@ -339,13 +337,6 @@ module.exports = {
 			iconURL: i.user.displayAvatarURL(),
 		});
 		await i.channel?.send({ embeds: [embed] });
-	},
-	executeBtn: async (i: ButtonInteraction) => {
-		if (i.customId.startsWith('music.queue')) {
-			if (Date.now() / 1000 - i.createdTimestamp >= 900000) {
-				console.log('a');
-			}
-		}
 	},
 };
 

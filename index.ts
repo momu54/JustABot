@@ -1,19 +1,18 @@
 import {
 	ApplicationCommandType,
-	ButtonInteraction,
-	ChatInputCommandInteraction,
 	Client,
+	codeBlock,
 	Collection,
 	ComponentType,
+	EmbedBuilder,
 	GatewayIntentBits,
 	InteractionType,
-	SelectMenuInteraction,
-	SlashCommandBuilder,
 } from 'discord.js';
 import 'dotenv/config';
 import path from 'path';
 import fs from 'fs';
 import { Player } from 'discord-music-player';
+import { CommandType, InteractionError } from './type';
 
 const client = new Client({
 	intents: [
@@ -32,13 +31,6 @@ const player = new Player(client, {
 var commands = new Collection<string, CommandType>();
 const commandsPath = path.join(__dirname, 'commands');
 const commandsFile = fs.readdirSync(commandsPath);
-
-interface CommandType {
-	data: SlashCommandBuilder;
-	execute(i: ChatInputCommandInteraction, player: Player): void;
-	executeBtn?(i: ButtonInteraction, player: Player): void;
-	executeMenu?(i: SelectMenuInteraction, player: Player): void;
-}
 
 client.on('ready', () => {
 	console.log('ready!');
@@ -67,10 +59,18 @@ client.on('interactionCreate', async (i) => {
 				await commandFile.execute(i, player);
 			} catch (error) {
 				console.error(error);
-				await i.reply({
-					content: 'There was an error while executing this command!',
-					ephemeral: true,
-				});
+				const errorembed = geterrorembed(error);
+				try {
+					await i.reply({
+						embeds: [errorembed],
+						ephemeral: true,
+					});
+				} catch (err) {
+					console.error(err);
+					await i.editReply({
+						embeds: [errorembed],
+					});
+				}
 			}
 		}
 	}
@@ -82,10 +82,18 @@ client.on('interactionCreate', async (i) => {
 				await commandFile.executeBtn?.(i, player);
 			} catch (error) {
 				console.error(error);
-				await i.reply({
-					content: 'There was an error while executing this command!',
-					ephemeral: true,
-				});
+				const errorembed = geterrorembed(error);
+				try {
+					await i.reply({
+						embeds: [errorembed],
+						ephemeral: true,
+					});
+				} catch (err) {
+					console.error(err);
+					await i.editReply({
+						embeds: [errorembed],
+					});
+				}
 			}
 		}
 		if (i.componentType == ComponentType.SelectMenu) {
@@ -93,13 +101,28 @@ client.on('interactionCreate', async (i) => {
 				await commandFile.executeMenu?.(i, player);
 			} catch (error) {
 				console.error(error);
-				await i.reply({
-					content: 'There was an error while executing this command!',
-					ephemeral: true,
-				});
+				const errorembed = geterrorembed(error);
+				try {
+					await i.reply({
+						embeds: [errorembed],
+						ephemeral: true,
+					});
+				} catch (err) {
+					console.error(err);
+					await i.editReply({
+						embeds: [errorembed],
+					});
+				}
 			}
 		}
 	}
 });
+
+function geterrorembed(error: any) {
+	return new EmbedBuilder()
+		.setColor(0xf00000)
+		.setTitle('error!')
+		.setDescription(codeBlock('js', (error as InteractionError).stack));
+}
 
 client.login(process.env.TOKEN);
