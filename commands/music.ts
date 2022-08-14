@@ -88,6 +88,11 @@ module.exports = {
 			new SlashCommandSubcommandBuilder()
 				.setName('queue')
 				.setDescription('Shows the current queue.')
+		)
+		.addSubcommand(
+			new SlashCommandSubcommandBuilder()
+				.setName('nowplaying')
+				.setDescription('Shows the currently playing song.')
 		),
 	execute: async (i: ChatInputCommandInteraction, player: Player) => {
 		if (!i.guild) {
@@ -299,6 +304,7 @@ module.exports = {
 				i.editReply({ embeds: [embed] });
 			});
 			pagination.send(i);
+		} else if (subcmd == 'nowplaying') {
 		}
 	},
 	executeMenu: async (i: SelectMenuInteraction, player: Player) => {
