@@ -12,7 +12,3 @@ export interface CommandType {
 	executeBtn?(i: ButtonInteraction, player: Player): Promise<void>;
 	executeMenu?(i: SelectMenuInteraction, player: Player): Promise<void>;
 }
-
-export interface InteractionError {
-	stack: string;
-}

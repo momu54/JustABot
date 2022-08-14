@@ -12,7 +12,7 @@ import 'dotenv/config';
 import path from 'path';
 import fs from 'fs';
 import { Player } from 'discord-music-player';
-import { CommandType, InteractionError } from './type';
+import { CommandType } from './type';
 
 const client = new Client({
 	intents: [
@@ -51,7 +51,7 @@ async function loadcommand() {
 client.on('interactionCreate', async (i) => {
 	if (i.type == InteractionType.ApplicationCommand) {
 		if (i.commandType == ApplicationCommandType.ChatInput) {
-			const commandFile = commands.get(i.commandName) as CommandType;
+			const commandFile = commands.get(i.commandName);
 
 			if (!commandFile) return;
 
@@ -76,7 +76,10 @@ client.on('interactionCreate', async (i) => {
 	}
 	if (i.type == InteractionType.MessageComponent) {
 		const commandName = i.customId.split('.')[0];
-		const commandFile = commands.get(commandName) as CommandType;
+		const commandFile = commands.get(commandName);
+
+		if (!commandFile) return;
+
 		if (i.componentType == ComponentType.Button) {
 			try {
 				await commandFile.executeBtn?.(i, player);
@@ -122,7 +125,7 @@ function geterrorembed(error: any) {
 	return new EmbedBuilder()
 		.setColor(0xf00000)
 		.setTitle('error!')
-		.setDescription(codeBlock('js', (error as InteractionError).stack));
+		.setDescription(codeBlock('js', (error as Error).stack!));
 }
 
 client.login(process.env.TOKEN);

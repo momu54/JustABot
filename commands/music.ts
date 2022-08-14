@@ -224,7 +224,7 @@ module.exports = {
 				.setColor(0xff0000)
 				.setTitle('error!')
 				.setDescription('No songs are currently playing.');
-			await i.reply({ embeds: [errembed] });
+			await i.reply({ embeds: [errembed], ephemeral: true });
 			return;
 		}
 		if (subcmd == 'skip') {
@@ -305,6 +305,20 @@ module.exports = {
 			});
 			pagination.send(i);
 		} else if (subcmd == 'nowplaying') {
+			const song = guildqueue.nowPlaying!;
+			const embed = getsongembed(song);
+			const bar = guildqueue
+				.createProgressBar({
+					size: 40,
+				})
+				.prettier.replaceAll(' ', '  ');
+			embed.setFooter({
+				text:
+					`${bar}\n` +
+					'If you use the mobile client, the progress bar may have display problems.\n' +
+					'Due to the font width, the further you play, the longer the overall length of the progress bar is likely to be.',
+			});
+			i.reply({ embeds: [embed] });
 		}
 	},
 	executeMenu: async (i: SelectMenuInteraction, player: Player) => {
@@ -330,7 +344,7 @@ module.exports = {
 		const row = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
 			SelectMenuBuilder.from(i.component)
 				.setDisabled(true)
-				.setPlaceholder(selection?.label as string)
+				.setPlaceholder(selection?.label!)
 		);
 		await i.update({ components: [row] });
 		const queue = player.createQueue(i.guild.id);
