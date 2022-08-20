@@ -1,4 +1,4 @@
-import { Player, Playlist, RepeatMode, Song } from 'discord-music-player';
+import { Player, Playlist, Queue, RepeatMode, Song } from 'discord-music-player';
 import {
 	ActionRowBuilder,
 	bold,
@@ -93,6 +93,16 @@ module.exports = {
 			new SlashCommandSubcommandBuilder()
 				.setName('nowplaying')
 				.setDescription('Shows the currently playing song.')
+		)
+		.addSubcommand(
+			new SlashCommandSubcommandBuilder()
+				.setName('pause')
+				.setDescription('Pauses the current player.')
+		)
+		.addSubcommand(
+			new SlashCommandSubcommandBuilder()
+				.setName('resume')
+				.setDescription('Resumes the current player.')
 		),
 	execute: async (i: ChatInputCommandInteraction, player: Player) => {
 		if (!i.guild) {
@@ -100,7 +110,7 @@ module.exports = {
 				.setColor(0xff0000)
 				.setTitle('error!')
 				.setDescription('You cannot execute this command in DM.');
-			i.reply({
+			await i.reply({
 				embeds: [errembed],
 				ephemeral: true,
 			});
@@ -114,13 +124,13 @@ module.exports = {
 				.setDescription(
 					'You need to join a voice channel to execute this command.'
 				);
-			i.reply({
+			await i.reply({
 				embeds: [errembed],
 				ephemeral: true,
 			});
 			return;
 		}
-		const guildqueue = player.getQueue(i.guild.id);
+		const queue = player.getQueue(i.guild.id);
 		const subcmd = i.options.getSubcommand();
 		if (subcmd == 'play') {
 			const keyword = i.options.getString('keyword', true);
@@ -158,15 +168,15 @@ module.exports = {
 				return;
 			}
 			await i.deferReply();
-			const queue = player.createQueue(i.guild.id);
-			await queue.join(i.member.voice.channel?.id);
+			const newqueue = player.createQueue(i.guild.id);
+			await newqueue.join(i.member.voice.channel?.id);
 			if (keyword.includes('/playlist/') || keyword.includes('&list=')) {
 				var list: Playlist;
 				try {
-					list = await queue.playlist(keyword);
+					list = await newqueue.playlist(keyword);
 				} catch (err) {
-					if (!guildqueue) {
-						queue.stop();
+					if (!queue) {
+						newqueue.stop();
 					}
 					const errembed = new EmbedBuilder()
 						.setColor(0xff0000)
@@ -188,10 +198,10 @@ module.exports = {
 			}
 			var song: Song;
 			try {
-				song = await queue.play(keyword);
+				song = await newqueue.play(keyword);
 			} catch (err) {
-				if (!guildqueue) {
-					queue.stop();
+				if (!queue) {
+					newqueue.stop();
 				}
 				const errembed = new EmbedBuilder()
 					.setColor(0xff0000)
@@ -219,7 +229,7 @@ module.exports = {
 				);
 			await i.reply({ embeds: [embed], ephemeral: true });
 		}
-		if (!guildqueue?.isPlaying) {
+		if (!queue?.isPlaying) {
 			const errembed = new EmbedBuilder()
 				.setColor(0xff0000)
 				.setTitle('error!')
@@ -228,18 +238,18 @@ module.exports = {
 			return;
 		}
 		if (subcmd == 'skip') {
-			const song = guildqueue.skip();
-			guildqueue.skip();
+			const song = queue.skip();
+			queue.skip();
 			const embed = getsongembed(song);
-			embed.setTitle(`Skiped ${embed.data.title}`);
+			embed.setTitle(`skiped: ${embed.data.title}`);
 			await i.reply({ embeds: [embed] });
 		} else if (subcmd == 'stop') {
-			guildqueue.stop();
+			queue.stop();
 			const embed = new EmbedBuilder().setColor(0xffffff).setTitle('stoped!');
 			await i.reply({ embeds: [embed] });
 		} else if (subcmd == 'loop') {
 			const mode = i.options.getNumber('mode', true);
-			guildqueue.setRepeatMode(mode);
+			queue.setRepeatMode(mode);
 			const embed = new EmbedBuilder()
 				.setColor(0xffffff)
 				.setTitle('loop')
@@ -248,15 +258,15 @@ module.exports = {
 				);
 			await i.reply({ embeds: [embed] });
 		} else if (subcmd == 'clear') {
-			guildqueue.clearQueue();
+			queue.clearQueue();
 			const embed = new EmbedBuilder().setColor(0xffffff).setTitle('cleared!');
 			await i.reply({ embeds: [embed] });
 		} else if (subcmd == 'shuffle') {
-			guildqueue.shuffle();
+			queue.shuffle();
 			const embed = new EmbedBuilder().setColor(0xffffff).setTitle('shuffled!');
 			await i.reply({ embeds: [embed] });
 		} else if (subcmd == 'queue') {
-			const songs = guildqueue.songs;
+			const songs = queue.songs;
 			const pagelength = Math.ceil(songs.length / 10);
 			var pages: EmbedBuilder[] = [];
 			for (let i = 0; i < pagelength; i++) {
@@ -274,7 +284,7 @@ module.exports = {
 						.setTitle('queue')
 						.setDescription(desc)
 						.setFooter({
-							text: `Pages: ${i + 1}/${pagelength}`,
+							text: `pages: ${i + 1}/${pagelength}`,
 						})
 				);
 			}
@@ -301,13 +311,13 @@ module.exports = {
 				embed.setFooter({
 					text: `${embed.data.footer?.text} This menu has expired, please use '/music queue' again.`,
 				});
-				i.editReply({ embeds: [embed] });
+				await i.editReply({ embeds: [embed] });
 			});
 			pagination.send(i);
 		} else if (subcmd == 'nowplaying') {
-			const song = guildqueue.nowPlaying!;
+			const song = queue.nowPlaying!;
 			const embed = getsongembed(song);
-			const bar = guildqueue
+			const bar = queue
 				.createProgressBar({
 					size: 40,
 				})
@@ -318,9 +328,19 @@ module.exports = {
 					'If you use the mobile client, the progress bar may have display problems.\n' +
 					'Due to the font width, the further you play, the longer the overall length of the progress bar is likely to be.',
 			});
-			i.reply({ embeds: [embed] });
+			await i.reply({ embeds: [embed] });
 		} else if (subcmd == 'pause') {
-		    guildqueue.setPaused(!guildqueue.paused)
+			queue.setPaused(true);
+			const song = queue.nowPlaying!;
+			const embed = getsongembed(song);
+			embed.setTitle(`paused: ${embed.data.title}`);
+			await i.reply({ embeds: [embed] });
+		} else if (subcmd == 'resume') {
+			queue.setPaused(false);
+			const song = queue.nowPlaying!;
+			const embed = getsongembed(song);
+			embed.setTitle(`resumed: ${embed.data.title}`);
+			await i.reply({ embeds: [embed] });
 		}
 	},
 	executeMenu: async (i: SelectMenuInteraction, player: Player) => {
@@ -333,7 +353,7 @@ module.exports = {
 				.setDescription(
 					'You need to join a voice channel to execute this command.'
 				);
-			i.reply({
+			await i.reply({
 				embeds: [errembed],
 				ephemeral: true,
 			});
