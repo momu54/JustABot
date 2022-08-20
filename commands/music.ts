@@ -320,7 +320,7 @@ module.exports = {
 			});
 			i.reply({ embeds: [embed] });
 		} else if (subcmd == 'pause') {
-		    guildqueue.setPause(guildqueue.paused)
+		    guildqueue.setPaused(!guildqueue.paused)
 		}
 	},
 	executeMenu: async (i: SelectMenuInteraction, player: Player) => {
