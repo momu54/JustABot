@@ -319,6 +319,8 @@ module.exports = {
 					'Due to the font width, the further you play, the longer the overall length of the progress bar is likely to be.',
 			});
 			i.reply({ embeds: [embed] });
+		} else if (subcmd == 'pause') {
+		    guildqueue.setPause(guildqueue.paused)
 		}
 	},
 	executeMenu: async (i: SelectMenuInteraction, player: Player) => {
