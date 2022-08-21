@@ -1,4 +1,4 @@
-import { Player, Playlist, Queue, RepeatMode, Song } from 'discord-music-player';
+import { Player, Playlist, RepeatMode, Song } from 'discord-music-player';
 import {
 	ActionRowBuilder,
 	bold,
