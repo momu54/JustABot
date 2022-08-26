@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
 		"target": "ESNext" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
-		"module": "NodeNext",
+		"module": "ESNext",
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
 
@@ -16,7 +16,8 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"noImplicitReturns": true,
-		"outDir": "out"
+		"outDir": "out",
+		"moduleResolution": "NodeNext"
 	},
 	"include": ["index.ts", "commands/*.ts"],
 	"exclude": ["node_modules/**"]
