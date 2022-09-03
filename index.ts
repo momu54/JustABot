@@ -14,6 +14,9 @@ import fs from 'fs';
 import { Player } from 'discord-music-player';
 import { CommandType, MessageCommandType } from './type';
 
+//load other features
+import { execute } from './other/voicechannel';
+
 const client = new Client({
 	intents: [
 		GatewayIntentBits.GuildMembers,
@@ -40,13 +43,13 @@ client.on('ready', () => {
 });
 
 async function loadcommand() {
-	await client.application?.commands.set([]);
+	//await client.application?.commands.set([]);
 	console.log('Started refreshing application (/) commands.');
 	for (const file of CommandsFiles) {
 		const filePath = path.join(CommandsPath, file);
 		const command = require(filePath) as CommandType;
 		commands.set(command.data.name, command);
-		await client.application?.commands.create(command.data);
+		//await client.application?.commands.create(command.data);
 	}
 	console.log('Successfully reloaded application (/) commands.');
 	console.log('Started refreshing application (MessageContextMenu) commands.');
@@ -54,7 +57,7 @@ async function loadcommand() {
 		const filePath = path.join(MessageCommandsPath, file);
 		const command = require(filePath) as MessageCommandType;
 		MessageCommands.set(command.data.name, command);
-		await client.application?.commands.create(command.data);
+		//await client.application?.commands.create(command.data);
 	}
 	console.log('Successfully reloaded application (MessageContextMenu) commands.');
 }
@@ -152,6 +155,8 @@ client.on('interactionCreate', async (i) => {
 		}
 	}
 });
+
+client.on('voiceStateUpdate', execute);
 
 function geterrorembed(error: any) {
 	return new EmbedBuilder()
