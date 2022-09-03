@@ -12,7 +12,7 @@ import 'dotenv/config';
 import path from 'path';
 import fs from 'fs';
 import { Player } from 'discord-music-player';
-import { CommandType } from './type';
+import { CommandType, MessageCommandType } from './type';
 
 const client = new Client({
 	intents: [
@@ -29,34 +29,67 @@ const player = new Player(client, {
 	leaveOnEnd: true,
 });
 var commands = new Collection<string, CommandType>();
-const commandsPath = path.join(__dirname, 'commands');
-const commandsFile = fs.readdirSync(commandsPath);
-
+var MessageCommands = new Collection<string, MessageCommandType>();
+const CommandsPath = path.join(__dirname, 'commands');
+const CommandsFiles = fs.readdirSync(CommandsPath);
+const MessageCommandsPath = path.join(__dirname, 'MessageCommands');
+const MessageCommandsFiles = fs.readdirSync(MessageCommandsPath);
 client.on('ready', () => {
 	console.log('ready!');
 	loadcommand();
 });
 
 async function loadcommand() {
-	for (const file of commandsFile) {
-		const filePath = path.join(commandsPath, file);
+	await client.application?.commands.set([]);
+	console.log('Started refreshing application (/) commands.');
+	for (const file of CommandsFiles) {
+		const filePath = path.join(CommandsPath, file);
 		const command = require(filePath) as CommandType;
 		commands.set(command.data.name, command);
-		client.application?.commands.create(command.data);
+		await client.application?.commands.create(command.data);
 	}
-	console.log('Started refreshing application (/) commands.');
 	console.log('Successfully reloaded application (/) commands.');
+	console.log('Started refreshing application (MessageContextMenu) commands.');
+	for (const file of MessageCommandsFiles) {
+		const filePath = path.join(MessageCommandsPath, file);
+		const command = require(filePath) as MessageCommandType;
+		MessageCommands.set(command.data.name, command);
+		await client.application?.commands.create(command.data);
+	}
+	console.log('Successfully reloaded application (MessageContextMenu) commands.');
 }
 
 client.on('interactionCreate', async (i) => {
 	if (i.type == InteractionType.ApplicationCommand) {
 		if (i.commandType == ApplicationCommandType.ChatInput) {
-			const commandFile = commands.get(i.commandName);
+			const CommandFile = commands.get(i.commandName);
 
-			if (!commandFile) return;
+			if (!CommandFile) return;
 
 			try {
-				await commandFile.execute(i, player);
+				await CommandFile.execute(i, player);
+			} catch (error) {
+				console.error(error);
+				const errorembed = geterrorembed(error);
+				try {
+					await i.reply({
+						embeds: [errorembed],
+						ephemeral: true,
+					});
+				} catch (err) {
+					console.error(err);
+					await i.editReply({
+						embeds: [errorembed],
+					});
+				}
+			}
+		} else if (i.commandType == ApplicationCommandType.Message) {
+			const CommandFile = MessageCommands.get(i.commandName);
+
+			if (!CommandFile) return;
+
+			try {
+				await CommandFile.execute(i);
 			} catch (error) {
 				console.error(error);
 				const errorembed = geterrorembed(error);
@@ -75,14 +108,14 @@ client.on('interactionCreate', async (i) => {
 		}
 	}
 	if (i.type == InteractionType.MessageComponent) {
-		const commandName = i.customId.split('.')[0];
-		const commandFile = commands.get(commandName);
+		const CommandName = i.customId.split('.')[0];
+		const CommandFile = commands.get(CommandName);
 
-		if (!commandFile) return;
+		if (!CommandFile) return;
 
 		if (i.componentType == ComponentType.Button) {
 			try {
-				await commandFile.executeBtn?.(i, player);
+				await CommandFile.executeBtn?.(i);
 			} catch (error) {
 				console.error(error);
 				const errorembed = geterrorembed(error);
@@ -98,10 +131,9 @@ client.on('interactionCreate', async (i) => {
 					});
 				}
 			}
-		}
-		if (i.componentType == ComponentType.SelectMenu) {
+		} else if (i.componentType == ComponentType.SelectMenu) {
 			try {
-				await commandFile.executeMenu?.(i, player);
+				await CommandFile.executeMenu?.(i, player);
 			} catch (error) {
 				console.error(error);
 				const errorembed = geterrorembed(error);
