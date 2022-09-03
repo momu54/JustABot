@@ -7,7 +7,6 @@ import {
 } from 'discord.js';
 import JSZip from 'jszip';
 import jimp from 'jimp';
-import { writeFileSync } from 'fs';
 
 module.exports = {
 	data: new ContextMenuCommandBuilder()
