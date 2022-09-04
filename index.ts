@@ -49,7 +49,7 @@ async function loadcommand() {
 		const filePath = path.join(CommandsPath, file);
 		const command = require(filePath) as CommandType;
 		commands.set(command.data.name, command);
-		//await client.application?.commands.create(command.data);
+		await client.application?.commands.create(command.data);
 	}
 	console.log('Successfully reloaded application (/) commands.');
 	console.log('Started refreshing application (MessageContextMenu) commands.');
@@ -57,7 +57,7 @@ async function loadcommand() {
 		const filePath = path.join(MessageCommandsPath, file);
 		const command = require(filePath) as MessageCommandType;
 		MessageCommands.set(command.data.name, command);
-		//await client.application?.commands.create(command.data);
+		await client.application?.commands.create(command.data);
 	}
 	console.log('Successfully reloaded application (MessageContextMenu) commands.');
 }

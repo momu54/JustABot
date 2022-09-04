@@ -5,13 +5,13 @@ export async function execute(oldvoice: VoiceState, voice: VoiceState): Promise<
 	const category = channel?.parent;
 	const oldchannel = oldvoice.channel;
 	const oldcategory = oldchannel?.parent;
-	const CreateableChannel = oldcategory?.children.cache.find(
-		(c) => c.name == 'createchannel'
+	const CreatableChannel = oldcategory?.children.cache.find((c) =>
+		c.name.startsWith('[create]')
 	);
 	if (!voice.guild) return;
-	if (voice.channel?.name == 'createchannel' && category) {
-		if (oldchannel?.name.startsWith('[bot]')) {
-			voice.setChannel(oldchannel);
+	if (channel?.name.startsWith('[create]') && category) {
+		if (oldchannel?.name.startsWith('[bot]') && category == oldcategory) {
+			await voice.setChannel(oldchannel);
 			return;
 		}
 		const newchannel = await category.children.create({
@@ -19,11 +19,12 @@ export async function execute(oldvoice: VoiceState, voice: VoiceState): Promise<
 			type: ChannelType.GuildVoice,
 		});
 		await voice.setChannel(newchannel);
-	} else if (
+	}
+	if (
 		oldchannel?.name.startsWith('[bot]') &&
 		oldchannel?.members.size == 0 &&
 		oldcategory &&
-		CreateableChannel
+		CreatableChannel
 	) {
 		await oldchannel?.delete();
 	}
