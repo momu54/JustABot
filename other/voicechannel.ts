@@ -1,4 +1,10 @@
-import { ChannelType, VoiceState } from 'discord.js';
+import {
+	AuditLogEvent,
+	ChannelType,
+	NonThreadGuildBasedChannel,
+	VoiceState,
+} from 'discord.js';
+import { isChannelCreatedByBot } from '../utility/voice';
 
 export async function execute(oldvoice: VoiceState, voice: VoiceState): Promise<void> {
 	const channel = voice.channel;
@@ -27,5 +33,25 @@ export async function execute(oldvoice: VoiceState, voice: VoiceState): Promise<
 		CreatableChannel
 	) {
 		await oldchannel?.delete();
+	}
+}
+
+export async function ExecuteChannelCreate(c: NonThreadGuildBasedChannel) {
+	if (isChannelCreatedByBot(c) && c.type == ChannelType.GuildVoice) {
+		const name = c.name;
+		const fetchres = await c.guild.fetchAuditLogs({
+			limit: 1,
+			type: AuditLogEvent.ChannelCreate,
+		});
+		const log = fetchres.entries.first();
+		if (!log?.executor?.bot) {
+			await c.setName(
+				name == '[bot]' || name == '[create]'
+					? 'ThisNameIsReserved'
+					: name
+							.replace('[create]', '[ThisNameIsReserved]')
+							.replace('[bot]', '[ThisNameIsReserved]')
+			);
+		}
 	}
 }

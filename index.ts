@@ -15,7 +15,7 @@ import { Player } from 'discord-music-player';
 import { CommandType, MessageCommandType } from './type';
 
 //load other features
-import { execute } from './other/voicechannel';
+import { execute, ExecuteChannelCreate } from './other/voicechannel';
 
 const client = new Client({
 	intents: [
@@ -43,7 +43,7 @@ client.on('ready', () => {
 });
 
 async function loadcommand() {
-	//await client.application?.commands.set([]);
+	await client.application?.commands.set([]);
 	console.log('Started refreshing application (/) commands.');
 	for (const file of CommandsFiles) {
 		const filePath = path.join(CommandsPath, file);
@@ -156,7 +156,15 @@ client.on('interactionCreate', async (i) => {
 	}
 });
 
-client.on('voiceStateUpdate', execute);
+client.on('voiceStateUpdate', async (oldvoice, voice) => {
+	try {
+		await execute(oldvoice, voice);
+	} catch (error) {
+		console.error(error);
+	}
+});
+
+client.on('channelCreate', ExecuteChannelCreate);
 
 function geterrorembed(error: any) {
 	return new EmbedBuilder()

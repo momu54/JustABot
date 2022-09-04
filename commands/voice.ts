@@ -50,8 +50,7 @@ module.exports = {
 		if (subcmdgroup == 'category') {
 			if (subcmd == 'set') {
 				const category = i.options.getChannel('category', true);
-				var channelName = i.options.getString('channelname', false);
-				channelName = channelName ? `[create]${channelName}` : '[create]';
+				const channelName = i.options.getString('channelname', false);
 				if (category.type !== ChannelType.GuildCategory) return;
 				for (const e of category.children.cache) {
 					const channel = e[1];
@@ -60,7 +59,7 @@ module.exports = {
 					}
 				}
 				await category.children.create({
-					name: channelName,
+					name: channelName ? `[create]${channelName}` : '[create]',
 					type: ChannelType.GuildVoice,
 				});
 				const embed = new EmbedBuilder()
