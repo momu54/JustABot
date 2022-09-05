@@ -3,6 +3,7 @@
 	"version": "1.0.0",
 	"description": "",
 	"main": "index.ts",
+	"types": "index.d.ts",
 	"scripts": {
 		"start": "nodemon ./index.ts"
 	},

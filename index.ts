@@ -12,7 +12,7 @@ import 'dotenv/config';
 import path from 'path';
 import fs from 'fs';
 import { Player } from 'discord-music-player';
-import { CommandType, MessageCommandType } from './type';
+import { CommandType, MessageCommandType } from '.';
 
 //load other features
 import { execute, ExecuteChannelCreate } from './other/voicechannel';

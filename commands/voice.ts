@@ -1,16 +1,12 @@
 import {
-	//ActionRowBuilder,
 	ChannelType,
 	ChatInputCommandInteraction,
 	EmbedBuilder,
-	//ModalBuilder,
 	SlashCommandBuilder,
 	SlashCommandChannelOption,
 	SlashCommandStringOption,
 	SlashCommandSubcommandBuilder,
 	SlashCommandSubcommandGroupBuilder,
-	//TextInputBuilder,
-	//TextInputStyle,
 } from 'discord.js';
 import { isChannelCreatedByBot } from '../utility/voice';
 
@@ -42,14 +38,27 @@ module.exports = {
 								.setRequired(false)
 						)
 				)
+				.addSubcommand(
+					new SlashCommandSubcommandBuilder()
+						.setName('remove')
+						.setDescription('Remove the voice channel category.')
+						.addChannelOption(
+							new SlashCommandChannelOption()
+								.setName('category')
+								.setDescription('The voice category you want to remove.')
+								.setRequired(true)
+								.addChannelTypes(ChannelType.GuildCategory)
+						)
+				)
 		),
 	execute: async (i: ChatInputCommandInteraction) => {
 		if (!i.inCachedGuild()) return;
 		const subcmdgroup = i.options.getSubcommandGroup(true);
 		const subcmd = i.options.getSubcommand(true);
 		if (subcmdgroup == 'category') {
+			const category = i.options.getChannel('category', true);
+			if (category.type !== ChannelType.GuildCategory) return;
 			if (subcmd == 'set') {
-				const category = i.options.getChannel('category', true);
 				const channelName = i.options.getString('channelname', false);
 				if (category.type !== ChannelType.GuildCategory) return;
 				for (const e of category.children.cache) {
@@ -67,6 +76,24 @@ module.exports = {
 					.setTitle('voice category')
 					.setDescription('Category successfully set.');
 				await i.reply({ embeds: [embed], ephemeral: true });
+			} else if (subcmd == 'remove') {
+				const channel = category.children.cache.find((c) =>
+					c.name.startsWith('[create]')
+				);
+				if (channel) {
+					await channel.delete();
+					const embed = new EmbedBuilder()
+						.setColor(0xffffff)
+						.setTitle('voice category')
+						.setDescription('Category successfully remove.');
+					await i.reply({ embeds: [embed], ephemeral: true });
+				} else {
+					const errembed = new EmbedBuilder()
+						.setColor(0xff0000)
+						.setTitle('error!')
+						.setDescription('This category was not created by bots.');
+					await i.reply({ embeds: [errembed], ephemeral: true });
+				}
 			}
 		}
 	},
