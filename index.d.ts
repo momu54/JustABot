@@ -2,6 +2,7 @@ import { Player } from 'discord-music-player';
 import {
 	ButtonInteraction,
 	ChatInputCommandInteraction,
+	Collection,
 	ContextMenuCommandInteraction,
 	SelectMenuInteraction,
 	SlashCommandBuilder,
@@ -17,4 +18,10 @@ export interface CommandType {
 export interface MessageCommandType {
 	data: SlashCommandBuilder;
 	execute(i: ContextMenuCommandInteraction): Promise<void>;
+}
+
+export class HaveIncludesCollection<k, v> extends Collection<k, v> {
+	includes(e: any) {
+		return !!super.find((v) => v === e);
+	}
 }
