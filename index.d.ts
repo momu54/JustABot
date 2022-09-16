@@ -13,3 +13,8 @@ export interface CommandType {
 	executeBtn?(i: ButtonInteraction): Promise<void>;
 	executeMenu?(i: SelectMenuInteraction, player: Player): Promise<void>;
 }
+
+export interface MessageCommandType {
+	data: SlashCommandBuilder;
+	execute(i: ContextMenuCommandInteraction): Promise<void>;
+}
