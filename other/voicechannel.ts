@@ -4,7 +4,7 @@ import {
 	NonThreadGuildBasedChannel,
 	VoiceState,
 } from 'discord.js';
-import { isChannelCreatedByBot } from '../utility/voice';
+import { isChannelCreatedByBot } from '../utility/voice.js';
 
 export async function execute(oldvoice: VoiceState, voice: VoiceState): Promise<void> {
 	const channel = voice.channel;

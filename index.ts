@@ -12,10 +12,9 @@ import 'dotenv/config';
 import path from 'path';
 import fs from 'fs';
 import { Player } from 'discord-music-player';
-import { CommandType, MessageCommandType } from '.';
-
+import { CommandType, MessageCommandType } from './index.type.js';
 //load other features
-import { execute, ExecuteChannelCreate } from './other/voicechannel';
+import { execute, ExecuteChannelCreate } from './other/voicechannel.js';
 
 const client = new Client({
 	intents: [
@@ -33,9 +32,9 @@ const player = new Player(client, {
 });
 var commands = new Collection<string, CommandType>();
 var MessageCommands = new Collection<string, MessageCommandType>();
-const CommandsPath = path.join(__dirname, 'commands');
+const CommandsPath = path.join('./', 'commands');
 const CommandsFiles = fs.readdirSync(CommandsPath);
-const MessageCommandsPath = path.join(__dirname, 'MessageCommands');
+const MessageCommandsPath = path.join('./', 'MessageCommands');
 const MessageCommandsFiles = fs.readdirSync(MessageCommandsPath);
 client.on('ready', () => {
 	console.log('ready!');
@@ -47,16 +46,16 @@ async function loadcommand() {
 	clientcommands?.set([]);
 	console.log('Started refreshing application (/) commands.');
 	for (const file of CommandsFiles) {
-		const filePath = path.join(CommandsPath, file);
-		const command = require(filePath) as CommandType;
+		const filePath = `./commands/${file}`;
+		const command = (await import(filePath)) as CommandType;
 		commands.set(command.data.name, command);
 		clientcommands?.create(command.data);
 	}
 	console.log('Successfully reloaded application (/) commands.');
 	console.log('Started refreshing application (MessageContextMenu) commands.');
 	for (const file of MessageCommandsFiles) {
-		const filePath = path.join(MessageCommandsPath, file);
-		const command = require(filePath) as MessageCommandType;
+		const filePath = `./MessageCommands/${file}`;
+		const command = (await import(filePath)) as MessageCommandType;
 		MessageCommands.set(command.data.name, command);
 		clientcommands?.create(command.data);
 	}
