@@ -17,8 +17,9 @@
 		"noUnusedParameters": true,
 		"noImplicitReturns": true,
 		"outDir": "out",
+		"alwaysStrict": true,
 		"moduleResolution": "NodeNext"
 	},
 	"include": ["index.ts", "commands/*.ts", "MessageCommands/*.ts"],
-	"exclude": ["node_modules/**"]
+	"exclude": ["node_modules/**", "cache/*"]
 }

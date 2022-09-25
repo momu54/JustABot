@@ -1,3 +1,4 @@
 {
-	"exec": "node --loader ts-node/esm"
+	"exec": "node --loader ts-node/esm",
+	"ignore": ["cache/"]
 }

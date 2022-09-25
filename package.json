@@ -18,6 +18,7 @@
 	},
 	"homepage": "https://github.com/YueMu1022/MuYue-rewrite#readme",
 	"dependencies": {
+		"@ts-morph/bootstrap": "^0.17.0",
 		"@types/node": "^18.7.14",
 		"bufferutil": "^4.0.6",
 		"discord-music-player": "^9.0.2",

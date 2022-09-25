@@ -43,7 +43,7 @@ client.on('ready', () => {
 
 async function loadcommand() {
 	const clientcommands = client.application?.commands;
-	clientcommands?.set([]);
+	//clientcommands?.set([]);
 	console.log('Started refreshing application (/) commands.');
 	for (const file of CommandsFiles) {
 		const filePath = `./commands/${file}`;
@@ -151,6 +151,30 @@ client.on('interactionCreate', async (i) => {
 						embeds: [errorembed],
 					});
 				}
+			}
+		}
+	}
+	if (i.type == InteractionType.ModalSubmit) {
+		const CommandName = i.customId.split('.')[0];
+		const CommandFile = commands.get(CommandName);
+
+		if (!CommandFile) return;
+
+		try {
+			await CommandFile.executeModal?.(i);
+		} catch (error) {
+			console.error(error);
+			const errorembed = geterrorembed(error);
+			try {
+				await i.reply({
+					embeds: [errorembed],
+					ephemeral: true,
+				});
+			} catch (err) {
+				console.error(err);
+				await i.editReply({
+					embeds: [errorembed],
+				});
 			}
 		}
 	}
