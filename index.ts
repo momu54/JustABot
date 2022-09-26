@@ -7,13 +7,14 @@ import {
 	EmbedBuilder,
 	GatewayIntentBits,
 	InteractionType,
+	SlashCommandBuilder,
 } from 'discord.js';
 import 'dotenv/config';
 import path from 'path';
 import fs from 'fs';
-import { Player } from 'discord-music-player';
-import { CommandType, MessageCommandType } from './index.type.js';
-//load other features
+// import { Player } from 'discord-music-player';
+import { CommandType, MessageCommandType } from './type.js';
+// load other features
 import { execute, ExecuteChannelCreate } from './other/voicechannel.js';
 
 const client = new Client({
@@ -24,12 +25,12 @@ const client = new Client({
 		GatewayIntentBits.Guilds,
 	],
 });
-const player = new Player(client, {
-	deafenOnJoin: true,
-	leaveOnEmpty: true,
-	leaveOnStop: true,
-	leaveOnEnd: true,
-});
+// const player = new Player(client, {
+// 	deafenOnJoin: true,
+// 	leaveOnEmpty: true,
+// 	leaveOnStop: true,
+// 	leaveOnEnd: true,
+// });
 var commands = new Collection<string, CommandType>();
 var MessageCommands = new Collection<string, MessageCommandType>();
 const CommandsPath = path.join('./', 'commands');
@@ -43,23 +44,22 @@ client.on('ready', () => {
 
 async function loadcommand() {
 	const clientcommands = client.application?.commands;
-	//clientcommands?.set([]);
 	console.log('Started refreshing application (/) commands.');
 	for (const file of CommandsFiles) {
 		const filePath = `./commands/${file}`;
 		const command = (await import(filePath)) as CommandType;
 		commands.set(command.data.name, command);
-		clientcommands?.create(command.data);
 	}
-	console.log('Successfully reloaded application (/) commands.');
-	console.log('Started refreshing application (MessageContextMenu) commands.');
 	for (const file of MessageCommandsFiles) {
 		const filePath = `./MessageCommands/${file}`;
 		const command = (await import(filePath)) as MessageCommandType;
 		MessageCommands.set(command.data.name, command);
-		clientcommands?.create(command.data);
 	}
-	console.log('Successfully reloaded application (MessageContextMenu) commands.');
+	const AllCommands: SlashCommandBuilder[] = [...commands, ...MessageCommands].map(
+		(command) => command[1].data
+	);
+	await clientcommands?.set(AllCommands);
+	console.log('Successfully reloaded application (/) commands.');
 }
 
 client.on('interactionCreate', async (i) => {
@@ -70,7 +70,7 @@ client.on('interactionCreate', async (i) => {
 			if (!CommandFile) return;
 
 			try {
-				await CommandFile.execute(i, player);
+				await CommandFile.execute(i);
 			} catch (error) {
 				console.error(error);
 				const errorembed = geterrorembed(error);
@@ -136,7 +136,7 @@ client.on('interactionCreate', async (i) => {
 			}
 		} else if (i.componentType == ComponentType.SelectMenu) {
 			try {
-				await CommandFile.executeMenu?.(i, player);
+				await CommandFile.executeMenu?.(i);
 			} catch (error) {
 				console.error(error);
 				const errorembed = geterrorembed(error);

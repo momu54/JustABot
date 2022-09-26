@@ -1,4 +1,3 @@
-import { Player } from 'discord-music-player';
 import {
 	ButtonInteraction,
 	ChatInputCommandInteraction,
@@ -10,15 +9,18 @@ import {
 
 export interface CommandType {
 	data: SlashCommandBuilder;
-	execute(i: ChatInputCommandInteraction, player: Player): Promise<void>;
+	execute(i: ChatInputCommandInteraction): Promise<void>;
 	executeBtn?(i: ButtonInteraction): Promise<void>;
-	executeMenu?(i: SelectMenuInteraction, player: Player): Promise<void>;
+	executeMenu?(i: SelectMenuInteraction): Promise<void>;
 	executeModal?(i: ModalSubmitInteraction): Promise<void>;
 }
 
 export interface MessageCommandType {
 	data: SlashCommandBuilder;
 	execute(i: ContextMenuCommandInteraction): Promise<void>;
+	executeBtn?(i: ButtonInteraction): Promise<void>;
+	executeMenu?(i: SelectMenuInteraction): Promise<void>;
+	executeModal?(i: ModalSubmitInteraction): Promise<void>;
 }
 
 export type editerlanguages = 'js' | 'ts' | 'py';

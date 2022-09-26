@@ -17,7 +17,7 @@ import {
 	TextInputStyle,
 } from 'discord.js';
 import { createProject, ts } from '@ts-morph/bootstrap';
-import { editerlanguages } from '../index.type.js';
+import { editerlanguages } from '../type.js';
 //import { writeFileSync, rmSync } from 'fs';
 //import { exec } from 'child_process';
 //import { setTimeout } from 'timers/promises';
