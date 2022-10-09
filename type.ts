@@ -7,7 +7,7 @@ import {
 	SlashCommandBuilder,
 } from 'discord.js';
 
-export interface CommandType {
+export interface Command {
 	data: SlashCommandBuilder;
 	execute(i: ChatInputCommandInteraction): Promise<void>;
 	executeBtn?(i: ButtonInteraction): Promise<void>;
@@ -24,3 +24,8 @@ export interface MessageCommandType {
 }
 
 export type editerlanguages = 'js' | 'ts' | 'py';
+
+export enum CommandType {
+	global = 0,
+	guild = 1,
+}

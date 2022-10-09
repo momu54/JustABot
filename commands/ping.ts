@@ -10,9 +10,9 @@ import {
 
 export const data = new SlashCommandBuilder()
 	.setName('ping')
-	.setDescription('show websocket ping');
+	.setDescription('Show websocket ping.');
 
-export function execute(i: ChatInputCommandInteraction) {
+export async function execute(i: ChatInputCommandInteraction) {
 	var embed = getpingembed(i);
 	var row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 		new ButtonBuilder()
@@ -20,15 +20,15 @@ export function execute(i: ChatInputCommandInteraction) {
 			.setLabel('Refresh')
 			.setStyle(ButtonStyle.Primary)
 	);
-	i.reply({
+	await i.reply({
 		embeds: [embed],
 		components: [row],
 	});
 }
 
-export function executeBtn(i: ButtonInteraction) {
+export async function executeBtn(i: ButtonInteraction) {
 	var embed = getpingembed(i);
-	i.update({
+	await i.update({
 		embeds: [embed],
 	});
 }

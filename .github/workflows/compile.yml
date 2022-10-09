@@ -1,26 +1,29 @@
 name: Compile typescript
 
 on:
-  push:
-    branches: [ "main" ]
+    push:
+        branches: ['main']
 
 jobs:
-  Compile:
-    runs-on: ubuntu-latest
+    Compile:
+        runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [latest]
+        strategy:
+            matrix:
+                node-version: [latest]
 
-    steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm i
-    - run: tsc
-    - uses: actions/upload-artifact@v3
-      with:
-        name: jsfiles(zip)
-        path: out/
+        steps:
+            - uses: actions/checkout@v3
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v3
+              with:
+                  node-version: ${{ matrix.node-version }}
+            - name: Install dependencies
+              run: npm i
+            - name: Compile
+              run: npm run compile
+            - name: Upload artifact
+              uses: actions/upload-artifact@v3
+              with:
+                  name: artifact
+                  path: out/

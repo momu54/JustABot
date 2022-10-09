@@ -11,14 +11,6 @@ export const data = new SlashCommandBuilder()
 	.setDescription('Pull the code from github.');
 
 export async function execute(i: ChatInputCommandInteraction) {
-	if (i.user.id == process.env.BOT_OWNER) {
-		const errembed = new EmbedBuilder()
-			.setColor(0xf00000)
-			.setTitle('error!')
-			.setDescription('You are not the creator of this bot.');
-		await i.reply({ embeds: [errembed], ephemeral: true });
-		return;
-	}
 	exec('git pull', async (err, stdout, stderr) => {
 		if (err) {
 			const errembed = new EmbedBuilder()

@@ -13,7 +13,7 @@ import 'dotenv/config';
 import path from 'path';
 import fs from 'fs';
 // import { Player } from 'discord-music-player';
-import { CommandType, MessageCommandType } from './type.js';
+import { Command, MessageCommandType } from './type.js';
 // load other features
 import { execute, ExecuteChannelCreate } from './other/voicechannel.js';
 
@@ -31,15 +31,15 @@ const client = new Client({
 // 	leaveOnStop: true,
 // 	leaveOnEnd: true,
 // });
-var commands = new Collection<string, CommandType>();
+var commands = new Collection<string, Command>();
 var MessageCommands = new Collection<string, MessageCommandType>();
 const CommandsPath = path.join('./', 'commands');
 const CommandsFiles = fs.readdirSync(CommandsPath);
 const MessageCommandsPath = path.join('./', 'MessageCommands');
 const MessageCommandsFiles = fs.readdirSync(MessageCommandsPath);
-client.on('ready', () => {
+client.on('ready', async () => {
 	console.log('ready!');
-	loadcommand();
+	await loadcommand();
 });
 
 async function loadcommand() {
@@ -47,7 +47,7 @@ async function loadcommand() {
 	console.log('Started refreshing application (/) commands.');
 	for (const file of CommandsFiles) {
 		const filePath = `./commands/${file}`;
-		const command = (await import(filePath)) as CommandType;
+		const command = (await import(filePath)) as Command;
 		commands.set(command.data.name, command);
 	}
 	for (const file of MessageCommandsFiles) {
