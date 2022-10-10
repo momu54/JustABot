@@ -3,5 +3,6 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/YueMu1022/AltF4Bot)
 ![GitHub](https://img.shields.io/github/license/YueMu1022/AltF4Bot)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/YueMu1022/AltF4Bot)
+[![Forks][forks-shield]][forks-url]
 
 Just a bot.
