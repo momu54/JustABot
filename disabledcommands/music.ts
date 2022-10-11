@@ -139,7 +139,7 @@ module.exports = {
 					ephemeral: true,
 				});
 				const result = await ytsr(keyword, { limit: 25 });
-				var menu = new SelectMenuBuilder()
+				let menu = new SelectMenuBuilder()
 					.setCustomId('music.search')
 					.setPlaceholder('select result');
 				for (const item of result.items) {
@@ -171,7 +171,7 @@ module.exports = {
 			const newqueue = player.createQueue(i.guild.id);
 			await newqueue.join(i.member.voice.channel?.id);
 			if (keyword.includes('/playlist/') || keyword.includes('&list=')) {
-				var list: Playlist;
+				let list: Playlist;
 				try {
 					list = await newqueue.playlist(keyword);
 				} catch (err) {
@@ -196,7 +196,7 @@ module.exports = {
 				await i.editReply({ embeds: [embed] });
 				return;
 			}
-			var song: Song;
+			let song: Song;
 			try {
 				song = await newqueue.play(keyword);
 			} catch (err) {
@@ -268,9 +268,9 @@ module.exports = {
 		} else if (subcmd == 'queue') {
 			const songs = queue.songs;
 			const pagelength = Math.ceil(songs.length / 10);
-			var pages: EmbedBuilder[] = [];
+			let pages: EmbedBuilder[] = [];
 			for (let i = 0; i < pagelength; i++) {
-				var desc = '';
+				let desc = '';
 				const start = 10 * i;
 				const end = start + 10;
 				for (let index = start; index < end; index++) {
@@ -300,7 +300,7 @@ module.exports = {
 					style: ButtonStyle.Primary,
 				}),
 			];
-			var pagination = new InteractionPagination()
+			let pagination = new InteractionPagination()
 				.setButtons(buttons)
 				.setEmbeds(pages)
 				.setTime(880000);

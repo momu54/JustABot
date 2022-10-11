@@ -21,7 +21,7 @@ export async function execute(i: MessageContextMenuCommandInteraction) {
 		const Attachment = AttachmentList[index];
 		if (!Attachment.contentType?.startsWith('image')) continue;
 		const res = await fetch(Attachment.url);
-		var resimage = Buffer.from(await res.arrayBuffer());
+		let resimage = Buffer.from(await res.arrayBuffer());
 		if (Attachment.contentType != 'image/jpeg') {
 			const jimpimage = await jimp.read(resimage);
 			jimpimage.quality(70);

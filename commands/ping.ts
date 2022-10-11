@@ -13,8 +13,8 @@ export const data = new SlashCommandBuilder()
 	.setDescription('Show websocket ping.');
 
 export async function execute(i: ChatInputCommandInteraction) {
-	var embed = getpingembed(i);
-	var row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+	let embed = getpingembed(i);
+	let row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 		new ButtonBuilder()
 			.setCustomId('ping.refresh')
 			.setLabel('Refresh')
@@ -27,7 +27,7 @@ export async function execute(i: ChatInputCommandInteraction) {
 }
 
 export async function executeBtn(i: ButtonInteraction) {
-	var embed = getpingembed(i);
+	let embed = getpingembed(i);
 	await i.update({
 		embeds: [embed],
 	});

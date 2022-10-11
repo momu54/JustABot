@@ -5,6 +5,7 @@ import {
 	ModalSubmitInteraction,
 	SelectMenuInteraction,
 	SlashCommandBuilder,
+	AutocompleteInteraction,
 } from 'discord.js';
 
 export interface Command {
@@ -13,6 +14,7 @@ export interface Command {
 	executeBtn?(i: ButtonInteraction): Promise<void>;
 	executeMenu?(i: SelectMenuInteraction): Promise<void>;
 	executeModal?(i: ModalSubmitInteraction): Promise<void>;
+	executeAutoComplete?(i: AutocompleteInteraction): Promise<void>;
 }
 
 export interface MessageCommandType {
@@ -23,9 +25,21 @@ export interface MessageCommandType {
 	executeModal?(i: ModalSubmitInteraction): Promise<void>;
 }
 
-export type editerlanguages = 'js' | 'ts' | 'py';
+export enum editerlanguages {
+	ts = 'ts',
+	js = 'js',
+	py = 'py',
+}
 
 export enum CommandType {
 	global = 0,
 	guild = 1,
+}
+
+export interface GithubCache {
+	[key: string]: any[];
+}
+
+export interface GithubEtags {
+	[key: string]: string;
 }

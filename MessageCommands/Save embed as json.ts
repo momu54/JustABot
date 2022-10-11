@@ -20,7 +20,7 @@ export async function execute(i: MessageContextMenuCommandInteraction) {
 		await i.reply({ embeds: [errembed], ephemeral: true });
 		return;
 	}
-	var Attachments: AttachmentBuilder[] = [];
+	let Attachments: AttachmentBuilder[] = [];
 	for (let index = 0; index < msg.embeds.length; index++) {
 		const embed = msg.embeds[index];
 		const DataString = JSON.stringify(embed.toJSON(), null, 4);

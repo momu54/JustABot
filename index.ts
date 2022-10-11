@@ -31,8 +31,8 @@ const client = new Client({
 // 	leaveOnStop: true,
 // 	leaveOnEnd: true,
 // });
-var commands = new Collection<string, Command>();
-var MessageCommands = new Collection<string, MessageCommandType>();
+let commands = new Collection<string, Command>();
+let MessageCommands = new Collection<string, MessageCommandType>();
 const CommandsPath = path.join('./', 'commands');
 const CommandsFiles = fs.readdirSync(CommandsPath);
 const MessageCommandsPath = path.join('./', 'MessageCommands');
@@ -178,6 +178,17 @@ client.on('interactionCreate', async (i) => {
 			}
 		}
 	}
+	if (i.type == InteractionType.ApplicationCommandAutocomplete) {
+		const CommandFile = commands.get(i.commandName);
+
+		if (!CommandFile) return;
+
+		try {
+			await CommandFile.executeAutoComplete?.(i);
+		} catch (error) {
+			console.error(error);
+		}
+	}
 });
 
 client.on('voiceStateUpdate', async (oldvoice, voice) => {
@@ -197,4 +208,4 @@ function geterrorembed(error: any) {
 		.setDescription(codeBlock('js', (error as Error).stack!));
 }
 
-client.login(process.env.TOKEN);
+client.login(process.env.token);

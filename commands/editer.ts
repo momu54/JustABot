@@ -1,6 +1,7 @@
 import {
 	ActionRowBuilder,
 	AttachmentBuilder,
+	AutocompleteInteraction,
 	ButtonBuilder,
 	ButtonInteraction,
 	ButtonStyle,
@@ -17,10 +18,11 @@ import {
 	TextInputStyle,
 } from 'discord.js';
 import { createProject, ts } from '@ts-morph/bootstrap';
-import { editerlanguages } from '../type.js';
-//import { writeFileSync, rmSync } from 'fs';
-//import { exec } from 'child_process';
-//import { setTimeout } from 'timers/promises';
+import { editerlanguages, GithubCache, GithubEtags } from '../type.js';
+const githubrepocache: GithubCache = {};
+const githubrepoetags: GithubEtags = {};
+const githubusercache: GithubCache = {};
+const githubuseretags: GithubEtags = {};
 
 export const data = new SlashCommandBuilder()
 	.setName('editer')
@@ -58,6 +60,31 @@ export const data = new SlashCommandBuilder()
 					.setDescription('File to load.')
 					.setRequired(true)
 			)
+	)
+	.addSubcommand(
+		new SlashCommandSubcommandBuilder()
+			.setName('loadfromgithub')
+			.setDescription('Load from the github repository.')
+			.addStringOption(
+				new SlashCommandStringOption()
+					.setName('username')
+					.setDescription('Github username')
+					.setRequired(true)
+			)
+			.addStringOption(
+				new SlashCommandStringOption()
+					.setName('repository')
+					.setDescription('Repository')
+					.setRequired(true)
+					.setAutocomplete(true)
+			)
+			.addStringOption(
+				new SlashCommandStringOption()
+					.setName('path')
+					.setDescription('Github file path')
+					.setRequired(true)
+					.setAutocomplete(true)
+			)
 	);
 
 export async function execute(i: ChatInputCommandInteraction) {
@@ -68,16 +95,16 @@ export async function execute(i: ChatInputCommandInteraction) {
 	} else if (subcmd == 'loadfile') {
 		const Attachment = i.options.getAttachment('file', true);
 		const contentType = Attachment.contentType;
-		var language: editerlanguages;
+		let language: editerlanguages;
 		switch (contentType) {
 			case 'video/MP2T; charset=utf-8':
-				language = 'ts';
+				language = editerlanguages.ts;
 				break;
 			case 'text/x-python; charset=utf-8':
-				language = 'py';
+				language = editerlanguages.js;
 				break;
 			case 'application/javascript; charset=utf-8':
-				language = 'js';
+				language = editerlanguages.py;
 				break;
 			default:
 				const errembed = new EmbedBuilder()
@@ -93,6 +120,7 @@ export async function execute(i: ChatInputCommandInteraction) {
 		const file = await res.arrayBuffer();
 		const filecontent = Buffer.from(file).toString('utf8');
 		await CreateEditer(i, language, filecontent);
+	} else if (subcmd == 'loadfromgithub') {
 	}
 }
 
@@ -129,14 +157,6 @@ async function CreateEditer(
 				.setCustomId('editer.destroy')
 				.setStyle(ButtonStyle.Danger)
 		);
-	/*.addComponents(
-			new ButtonBuilder()
-				.setEmoji('▶️')
-				.setCustomId(`editer.run.${language}`)
-				.setStyle(ButtonStyle.Primary)
-				.setDisabled(language == 'py')
-				.setLabel('Run on Deno')
-		);*/
 	await i.reply({ embeds: [embed], components: [row] });
 }
 
@@ -179,35 +199,7 @@ export async function executeBtn(i: ButtonInteraction) {
 		await i.showModal(modal);
 	} else if (action == 'destroy') {
 		await i.message.delete();
-	} /* else if (action == 'run') {
-		await i.deferReply({ ephemeral: true });
-		writeFileSync(`./cache/${i.id}.${language}`, code);
-		const process = exec(
-			`deno run ./cache/${i.id}.${language}`,
-			async (err, stdout, stderr) => {
-				rmSync(`./cache/${i.id}.${language}`);
-				var embed: EmbedBuilder;
-				if (err) {
-					embed = new EmbedBuilder()
-						.setColor(0xff0000)
-						.setTitle('error!')
-						.setDescription(codeBlock(stderr));
-				} else {
-					embed = new EmbedBuilder()
-						.setColor(0xffffff)
-						.setTitle('run')
-						.setDescription(codeBlock(stdout));
-				}
-				await i.editReply({ embeds: [embed] });
-			}
-		);
-		process.on('spawn', async () => {
-			await setTimeout(10000);
-			if (!process.exitCode) {
-				process.kill('SIGKILL');
-			}
-		});
-	}*/
+	}
 }
 
 export async function executeModal(i: ModalSubmitInteraction) {
@@ -261,5 +253,121 @@ export async function executeModal(i: ModalSubmitInteraction) {
 			name: `${filename}.${language}`,
 		});
 		await i.reply({ files: [Attachment], ephemeral: true });
+	}
+}
+
+export async function executeAutoComplete(i: AutocompleteInteraction) {
+	const forcused = i.options.getFocused(true);
+	const username = i.options.getString('username', false);
+	let jsonres: any[];
+	if (forcused.name == 'repository') {
+		const repoinput = forcused.value;
+		if (!username) {
+			await i.respond([]);
+			return;
+		}
+		const res = await fetch(`https://api.github.com/users/${username}/repos`, {
+			headers: {
+				Authorization: `Basic ${Buffer.from(
+					`${process.env.githubclientid}:${process.env.githubclientsecret}`
+				).toString('base64')}`,
+				'If-None-Match': githubuseretags[username],
+			},
+		});
+		if (res.status == 304) {
+			jsonres = githubusercache[`${username}`];
+		} else if (!res.ok) {
+			await i.respond([]);
+			return;
+		} else {
+			jsonres = (await res.json()) as any[];
+			githubusercache[`${username}`] = jsonres;
+			githubuseretags[`${username}`] = res.headers.get('ETag')!;
+		}
+		const filteredchoices = jsonres.filter(
+			(repo, index) =>
+				(repo.name.toLowerCase().includes(repoinput.toLowerCase()) ||
+					!repoinput) &&
+				index < 25
+		);
+		const choices = filteredchoices.map((repo) => ({
+			name: repo.name as string,
+			value: repo.name,
+		}));
+		await i.respond(choices);
+		return;
+	} else if (forcused.name == 'path') {
+		const repo = i.options.getString('repository', false);
+		const pathinput = forcused.value;
+		console.log(pathinput);
+		if (!repo || !username) {
+			await i.respond([]);
+			return;
+		}
+		if (pathinput.endsWith('/')) {
+			const res = await fetch(
+				`https://api.github.com/repos/${username}/${repo}/contents/${pathinput}`,
+				{
+					headers: {
+						Authorization: `Basic ${Buffer.from(
+							`${process.env.githubclientid}:${process.env.githubclientsecret}`
+						).toString('base64')}`,
+					},
+				}
+			);
+			const rawres = await res.json();
+			console.log(rawres);
+			if (!res.ok || (rawres.type || 'dir') != 'dir') {
+				await i.respond([]);
+				return;
+			} else {
+				jsonres = rawres;
+			}
+			const filteredchoices = jsonres.filter((_, index) => index < 25);
+			console.log(filteredchoices);
+			const choices = filteredchoices.map((file) => ({
+				name: file.path as string,
+				value: `${file.type};${
+					file.download_url ? file.download_url : file.url
+				}`.replace(`https://raw.githubusercontent.com/${username}/${repo}/`, ''),
+			}));
+			console.log(choices);
+			await i.respond(choices);
+			return;
+		} else {
+			const res = await fetch(
+				`https://api.github.com/repos/${username}/${repo}/contents`,
+				{
+					headers: {
+						Authorization: `Basic ${Buffer.from(
+							`${process.env.githubclientid}:${process.env.githubclientsecret}`
+						).toString('base64')}`,
+						'If-None-Match': githubrepoetags[`${username}.${repo}`],
+					},
+				}
+			);
+			if (res.status == 304) {
+				jsonres = githubrepocache[`${username}.${repo}`];
+			} else if (!res.ok) {
+				await i.respond([]);
+				return;
+			} else {
+				jsonres = (await res.json()) as any[];
+				githubrepocache[`${username}.${repo}`] = jsonres;
+				githubrepoetags[`${username}.${repo}`] = res.headers.get('ETag')!;
+			}
+			const filteredchoices = jsonres.filter(
+				(file, index) =>
+					(file.name.toLowerCase().includes(pathinput.toLowerCase()) ||
+						!pathinput) &&
+					index < 25
+			);
+			const choices = filteredchoices.map((file) => ({
+				name: file.name as string,
+				value: `${file.type};${file.download_url ? file.download_url : file.url}`,
+			}));
+			await i.respond(choices);
+			return;
+		}
 	}
 }
