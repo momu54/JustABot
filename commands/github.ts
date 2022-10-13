@@ -43,12 +43,14 @@ export async function executeBtn(i: ButtonInteraction) {
 	if (action == 'link') {
 		// 如果有人正在授權
 		if (issomeoneauthorizing) {
+			// 建立錯誤embed
 			const errembed = new EmbedBuilder()
 				.setColor(0xff0000)
 				.setTitle('Link Github account')
 				.setDescription(
 					'Another user is currently authorizing.\nPlease try again in five minutes.'
 				);
+			// 修改回應
 			await i.reply({ embeds: [errembed], ephemeral: true });
 			return;
 		}
