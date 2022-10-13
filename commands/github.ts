@@ -45,7 +45,7 @@ export async function executeBtn(i: ButtonInteraction) {
 		if (issomeoneauthorizing) {
 			const errembed = new EmbedBuilder()
 				.setColor(0xff0000)
-				.setTitle('Link Github account.')
+				.setTitle('Link Github account')
 				.setDescription(
 					'Another user is currently authorizing.\nPlease try again in five minutes.'
 				);
@@ -71,7 +71,7 @@ export async function executeBtn(i: ButtonInteraction) {
 		// 建立embed
 		const embed = new EmbedBuilder()
 			.setColor(0xffffff)
-			.setTitle('Link Github account.')
+			.setTitle('Link Github account')
 			.setDescription(
 				'Please click the button below the message and paste this code.\nIt may take a while after completion.'
 			)
@@ -107,7 +107,7 @@ export async function executeBtn(i: ButtonInteraction) {
 				// 建立embed
 				const embed = new EmbedBuilder()
 					.setColor(0x00ff00)
-					.setTitle('Link Github account.')
+					.setTitle('Link Github account')
 					.setDescription('✅ Done!');
 				// 修改回應
 				await i.editReply({ embeds: [embed], components: [] });
@@ -118,7 +118,7 @@ export async function executeBtn(i: ButtonInteraction) {
 		// 建立錯誤embed
 		const errembed = new EmbedBuilder()
 			.setColor(0xff0000)
-			.setTitle('Link Github account.')
+			.setTitle('Link Github account')
 			.setDescription('Expired, please execute the command again');
 		// 修改回應
 		await i.editReply({ embeds: [errembed], components: [] });
