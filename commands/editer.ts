@@ -268,9 +268,7 @@ export async function executeAutoComplete(i: AutocompleteInteraction) {
 		}
 		const res = await fetch(`https://api.github.com/users/${username}/repos`, {
 			headers: {
-				Authorization: `Basic ${Buffer.from(
-					`${process.env.githubclientid}:${process.env.githubclientsecret}`
-				).toString('base64')}`,
+				Authorization: `Basic ${process.env.githubauth}`,
 				'If-None-Match': githubuseretags[username],
 			},
 		});
@@ -309,9 +307,7 @@ export async function executeAutoComplete(i: AutocompleteInteraction) {
 				`https://api.github.com/repos/${username}/${repo}/contents/${pathinput}`,
 				{
 					headers: {
-						Authorization: `Basic ${Buffer.from(
-							`${process.env.githubclientid}:${process.env.githubclientsecret}`
-						).toString('base64')}`,
+						Authorization: process.env.githubauth!,
 					},
 				}
 			);
@@ -339,9 +335,7 @@ export async function executeAutoComplete(i: AutocompleteInteraction) {
 				`https://api.github.com/repos/${username}/${repo}/contents`,
 				{
 					headers: {
-						Authorization: `Basic ${Buffer.from(
-							`${process.env.githubclientid}:${process.env.githubclientsecret}`
-						).toString('base64')}`,
+						Authorization: process.env.githubauth!,
 						'If-None-Match': githubrepoetags[`${username}.${repo}`],
 					},
 				}

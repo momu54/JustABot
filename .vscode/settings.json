@@ -1,4 +1,4 @@
 {
 	"commentTranslate.targetLanguage": "ja",
-	"dotenv.enableAutocloaking": true
+	"dotenv.enableAutocloaking": false
 }
