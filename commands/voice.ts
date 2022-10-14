@@ -49,15 +49,15 @@ export const data = new SlashCommandBuilder()
 			)
 	);
 
-export async function execute(i: ChatInputCommandInteraction) {
-	if (!i.inCachedGuild()) return;
-	const subcmdgroup = i.options.getSubcommandGroup(true);
-	const subcmd = i.options.getSubcommand(true);
+export async function execute(interaction: ChatInputCommandInteraction) {
+	if (!interaction.inCachedGuild()) return;
+	const subcmdgroup = interaction.options.getSubcommandGroup(true);
+	const subcmd = interaction.options.getSubcommand(true);
 	if (subcmdgroup == 'category') {
-		const category = i.options.getChannel('category', true);
+		const category = interaction.options.getChannel('category', true);
 		if (category.type !== ChannelType.GuildCategory) return;
 		if (subcmd == 'set') {
-			const channelName = i.options.getString('channelname', false);
+			const channelName = interaction.options.getString('channelname', false);
 			if (category.type !== ChannelType.GuildCategory) return;
 			for (const e of category.children.cache) {
 				const channel = e[1];
@@ -73,7 +73,7 @@ export async function execute(i: ChatInputCommandInteraction) {
 				.setColor(0xffffff)
 				.setTitle('voice category')
 				.setDescription('Category successfully set.');
-			await i.reply({ embeds: [embed], ephemeral: true });
+			await interaction.reply({ embeds: [embed], ephemeral: true });
 		} else if (subcmd == 'remove') {
 			const channel = category.children.cache.find((c) =>
 				c.name.startsWith('[create]')
@@ -84,13 +84,13 @@ export async function execute(i: ChatInputCommandInteraction) {
 					.setColor(0xffffff)
 					.setTitle('voice category')
 					.setDescription('Category successfully remove.');
-				await i.reply({ embeds: [embed], ephemeral: true });
+				await interaction.reply({ embeds: [embed], ephemeral: true });
 			} else {
 				const errembed = new EmbedBuilder()
 					.setColor(0xff0000)
 					.setTitle('error!')
 					.setDescription('This category was not created by bots.');
-				await i.reply({ embeds: [errembed], ephemeral: true });
+				await interaction.reply({ embeds: [errembed], ephemeral: true });
 			}
 		}
 	}

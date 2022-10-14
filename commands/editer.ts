@@ -87,13 +87,16 @@ export const data = new SlashCommandBuilder()
 			)
 	);
 
-export async function execute(i: ChatInputCommandInteraction) {
-	const subcmd = i.options.getSubcommand();
+export async function execute(interaction: ChatInputCommandInteraction) {
+	const subcmd = interaction.options.getSubcommand();
 	if (subcmd == 'create') {
-		const language = i.options.getString('language', true) as editerlanguages;
+		const language = interaction.options.getString(
+			'language',
+			true
+		) as editerlanguages;
 		await CreateEditer(i, language);
 	} else if (subcmd == 'loadfile') {
-		const Attachment = i.options.getAttachment('file', true);
+		const Attachment = interaction.options.getAttachment('file', true);
 		const contentType = Attachment.contentType;
 		let language: editerlanguages;
 		switch (contentType) {
@@ -113,7 +116,7 @@ export async function execute(i: ChatInputCommandInteraction) {
 					.setDescription(
 						'This command only supports typescript, JavaScript, and python.\nIf there is no problem with the file, please confirm whether the encoding format is UTF-8.'
 					);
-				await i.reply({ embeds: [errembed], ephemeral: true });
+				await interaction.reply({ embeds: [errembed], ephemeral: true });
 				return;
 		}
 		const res = await fetch(Attachment.url);
@@ -125,7 +128,7 @@ export async function execute(i: ChatInputCommandInteraction) {
 }
 
 async function CreateEditer(
-	i: ChatInputCommandInteraction,
+	interaction: ChatInputCommandInteraction,
 	language: editerlanguages,
 	code?: string
 ) {
@@ -157,14 +160,14 @@ async function CreateEditer(
 				.setCustomId('editer.destroy')
 				.setStyle(ButtonStyle.Danger)
 		);
-	await i.reply({ embeds: [embed], components: [row] });
+	await interaction.reply({ embeds: [embed], components: [row] });
 }
 
-export async function executeBtn(i: ButtonInteraction) {
-	const args = i.customId.split('.');
+export async function executeBtn(interaction: ButtonInteraction) {
+	const args = interaction.customId.split('.');
 	const action = args[1];
 	const language = args[2];
-	const code = i.message.embeds[0]
+	const code = interaction.message.embeds[0]
 		.description!.replaceAll('```', '')
 		.replace(`${language}\n`, '');
 	if (action == 'edit') {
@@ -182,7 +185,7 @@ export async function executeBtn(i: ButtonInteraction) {
 						.setValue(code)
 				)
 			);
-		await i.showModal(modal);
+		await interaction.showModal(modal);
 	} else if (action == 'save') {
 		const modal = new ModalBuilder()
 			.setTitle(`save code`)
@@ -196,18 +199,18 @@ export async function executeBtn(i: ButtonInteraction) {
 						.setStyle(TextInputStyle.Short)
 				)
 			);
-		await i.showModal(modal);
+		await interaction.showModal(modal);
 	} else if (action == 'destroy') {
-		await i.message.delete();
+		await interaction.message.delete();
 	}
 }
 
-export async function executeModal(i: ModalSubmitInteraction) {
-	const args = i.customId.split('.');
+export async function executeModal(interaction: ModalSubmitInteraction) {
+	const args = interaction.customId.split('.');
 	const action = args[1];
 	const language = args[2];
 	if (action == 'editmodal') {
-		const code = i.fields.getTextInputValue('editer.code');
+		const code = interaction.fields.getTextInputValue('editer.code');
 		const embed = new EmbedBuilder()
 			.setColor(0xffffff)
 			.setTitle(`editer: ${language}`)
@@ -215,7 +218,7 @@ export async function executeModal(i: ModalSubmitInteraction) {
 			.setFooter({
 				text: `Detection problem only works with typescript.`,
 			});
-		await i.deferUpdate();
+		await interaction.deferUpdate();
 		// Check typescript
 		if (language == 'ts') {
 			const proj = await createProject({ useInMemoryFileSystem: true });
@@ -241,41 +244,44 @@ export async function executeModal(i: ModalSubmitInteraction) {
 				]);
 			}
 		}
-		await i.message?.edit({ embeds: [embed] });
+		await interaction.message?.edit({ embeds: [embed] });
 	} else if (action == 'savemodal') {
-		const msg = i.message!;
+		const msg = interaction.message!;
 		const code = msg.embeds[0]
 			.description!.replaceAll('```', '')
 			.replace(`${language}\n`, '');
-		const filename = i.fields.getTextInputValue('editer.save.filename');
+		const filename = interaction.fields.getTextInputValue('editer.save.filename');
 		const AttachmentData = Buffer.from(code);
 		const Attachment = new AttachmentBuilder(AttachmentData, {
 			name: `${filename}.${language}`,
 		});
-		await i.reply({ files: [Attachment], ephemeral: true });
+		await interaction.reply({ files: [Attachment], ephemeral: true });
 	}
 }
 
-export async function executeAutoComplete(i: AutocompleteInteraction) {
-	const forcused = i.options.getFocused(true);
-	const username = i.options.getString('username', false);
+export async function executeAutoComplete(interaction: AutocompleteInteraction) {
+	const forcused = interaction.options.getFocused(true);
+	const username = interaction.options.getString('username', false);
 	let jsonres: any[];
 	if (forcused.name == 'repository') {
 		const repoinput = forcused.value;
 		if (!username) {
-			await i.respond([]);
+			await interaction.respond([]);
 			return;
 		}
-		const res = await fetch(`https://api.github.com/users/${username}/repos`, {
-			headers: {
-				Authorization: `Basic ${process.env.githubauth}`,
-				'If-None-Match': githubuseretags[username],
-			},
-		});
+		const res = await fetch(
+			`https://apinteraction.github.com/users/${username}/repos`,
+			{
+				headers: {
+					Authorization: `Basic ${process.env.githubauth}`,
+					'If-None-Match': githubuseretags[username],
+				},
+			}
+		);
 		if (res.status == 304) {
 			jsonres = githubusercache[`${username}`];
 		} else if (!res.ok) {
-			await i.respond([]);
+			await interaction.respond([]);
 			return;
 		} else {
 			jsonres = (await res.json()) as any[];
@@ -292,19 +298,19 @@ export async function executeAutoComplete(i: AutocompleteInteraction) {
 			name: repo.name as string,
 			value: repo.name,
 		}));
-		await i.respond(choices);
+		await interaction.respond(choices);
 		return;
 	} else if (forcused.name == 'path') {
-		const repo = i.options.getString('repository', false);
+		const repo = interaction.options.getString('repository', false);
 		const pathinput = forcused.value;
 		console.log(pathinput);
 		if (!repo || !username) {
-			await i.respond([]);
+			await interaction.respond([]);
 			return;
 		}
 		if (pathinput.endsWith('/')) {
 			const res = await fetch(
-				`https://api.github.com/repos/${username}/${repo}/contents/${pathinput}`,
+				`https://apinteraction.github.com/repos/${username}/${repo}/contents/${pathinput}`,
 				{
 					headers: {
 						Authorization: process.env.githubauth!,
@@ -314,7 +320,7 @@ export async function executeAutoComplete(i: AutocompleteInteraction) {
 			const rawres = await res.json();
 			console.log(rawres);
 			if (!res.ok || (rawres.type || 'dir') != 'dir') {
-				await i.respond([]);
+				await interaction.respond([]);
 				return;
 			} else {
 				jsonres = rawres;
@@ -328,11 +334,11 @@ export async function executeAutoComplete(i: AutocompleteInteraction) {
 				}`.replace(`https://raw.githubusercontent.com/${username}/${repo}/`, ''),
 			}));
 			console.log(choices);
-			await i.respond(choices);
+			await interaction.respond(choices);
 			return;
 		} else {
 			const res = await fetch(
-				`https://api.github.com/repos/${username}/${repo}/contents`,
+				`https://apinteraction.github.com/repos/${username}/${repo}/contents`,
 				{
 					headers: {
 						Authorization: process.env.githubauth!,
@@ -343,7 +349,7 @@ export async function executeAutoComplete(i: AutocompleteInteraction) {
 			if (res.status == 304) {
 				jsonres = githubrepocache[`${username}.${repo}`];
 			} else if (!res.ok) {
-				await i.respond([]);
+				await interaction.respond([]);
 				return;
 			} else {
 				jsonres = (await res.json()) as any[];
@@ -360,7 +366,7 @@ export async function executeAutoComplete(i: AutocompleteInteraction) {
 				name: file.name as string,
 				value: `${file.type};${file.download_url ? file.download_url : file.url}`,
 			}));
-			await i.respond(choices);
+			await interaction.respond(choices);
 			return;
 		}
 	}

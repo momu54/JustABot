@@ -12,9 +12,9 @@ export const data = new ContextMenuCommandBuilder()
 	.setName('Save all image')
 	.setType(ApplicationCommandType.Message);
 
-export async function execute(i: MessageContextMenuCommandInteraction) {
-	await i.deferReply({ ephemeral: true });
-	const msg = i.targetMessage;
+export async function execute(interaction: MessageContextMenuCommandInteraction) {
+	await interaction.deferReply({ ephemeral: true });
+	const msg = interaction.targetMessage;
 	const AttachmentList = Array.from(msg.attachments.values());
 	const zip = new JSZip();
 	for (let index = 0; index < AttachmentList.length; index++) {
@@ -38,7 +38,7 @@ export async function execute(i: MessageContextMenuCommandInteraction) {
 			.setColor(0xff0000)
 			.setTitle('error!')
 			.setDescription('The generated zip is too large.');
-		await i.editReply({ embeds: [errembed] });
+		await interaction.editReply({ embeds: [errembed] });
 		return;
 	}
 	const zipAttachment = new AttachmentBuilder(zipData, {
@@ -49,5 +49,5 @@ export async function execute(i: MessageContextMenuCommandInteraction) {
 		.setColor(0xffffff)
 		.setTitle('done!')
 		.setDescription(`size: ${size}MB`);
-	await i.editReply({ embeds: [embed], files: [zipAttachment] });
+	await interaction.editReply({ embeds: [embed], files: [zipAttachment] });
 }

@@ -104,38 +104,38 @@ module.exports = {
 				.setName('resume')
 				.setDescription('Resumes the current player.')
 		),
-	execute: async (i: ChatInputCommandInteraction, player: Player) => {
-		if (!i.guild) {
+	execute: async (interaction: ChatInputCommandInteraction, player: Player) => {
+		if (!interaction.guild) {
 			const errembed = new EmbedBuilder()
 				.setColor(0xff0000)
 				.setTitle('error!')
 				.setDescription('You cannot execute this command in DM.');
-			await i.reply({
+			await interaction.reply({
 				embeds: [errembed],
 				ephemeral: true,
 			});
 			return;
 		}
-		if (!i.inCachedGuild()) return;
-		if (!i.member.voice.channel) {
+		if (!interaction.inCachedGuild()) return;
+		if (!interaction.member.voice.channel) {
 			const errembed = new EmbedBuilder()
 				.setColor(0xff0000)
 				.setTitle('error!')
 				.setDescription(
 					'You need to join a voice channel to execute this command.'
 				);
-			await i.reply({
+			await interaction.reply({
 				embeds: [errembed],
 				ephemeral: true,
 			});
 			return;
 		}
-		const queue = player.getQueue(i.guild.id);
-		const subcmd = i.options.getSubcommand();
+		const queue = player.getQueue(interaction.guild.id);
+		const subcmd = interaction.options.getSubcommand();
 		if (subcmd == 'play') {
-			const keyword = i.options.getString('keyword', true);
+			const keyword = interaction.options.getString('keyword', true);
 			if (!isUrl(keyword)) {
-				await i.deferReply({
+				await interaction.deferReply({
 					ephemeral: true,
 				});
 				const result = await ytsr(keyword, { limit: 25 });
@@ -161,15 +161,15 @@ module.exports = {
 					.setColor(0xffffff)
 					.setTitle('Search')
 					.setDescription('Please select a search result');
-				await i.editReply({
+				await interaction.editReply({
 					embeds: [embed],
 					components: [row],
 				});
 				return;
 			}
-			await i.deferReply();
-			const newqueue = player.createQueue(i.guild.id);
-			await newqueue.join(i.member.voice.channel?.id);
+			await interaction.deferReply();
+			const newqueue = player.createQueue(interaction.guild.id);
+			await newqueue.join(interaction.member.voice.channel?.id);
 			if (keyword.includes('/playlist/') || keyword.includes('&list=')) {
 				let list: Playlist;
 				try {
@@ -182,7 +182,7 @@ module.exports = {
 						.setColor(0xff0000)
 						.setTitle('error!')
 						.setDescription("Can't find playlist.");
-					await i.editReply({ embeds: [errembed] });
+					await interaction.editReply({ embeds: [errembed] });
 					return;
 				}
 				const embed = new EmbedBuilder()
@@ -190,10 +190,10 @@ module.exports = {
 					.setTitle(list.name)
 					.setDescription(`> 👤 ${list.author}\n> 🔗 ${list.url}`);
 				embed.setAuthor({
-					name: i.user.tag,
-					iconURL: i.user.displayAvatarURL(),
+					name: interaction.user.tag,
+					iconURL: interaction.user.displayAvatarURL(),
 				});
-				await i.editReply({ embeds: [embed] });
+				await interaction.editReply({ embeds: [embed] });
 				return;
 			}
 			let song: Song;
@@ -207,15 +207,15 @@ module.exports = {
 					.setColor(0xff0000)
 					.setTitle('error!')
 					.setDescription("Can't find song.");
-				await i.editReply({ embeds: [errembed] });
+				await interaction.editReply({ embeds: [errembed] });
 				return;
 			}
 			const embed = getsongembed(song);
 			embed.setAuthor({
-				name: i.user.tag,
-				iconURL: i.user.displayAvatarURL(),
+				name: interaction.user.tag,
+				iconURL: interaction.user.displayAvatarURL(),
 			});
-			await i.editReply({ embeds: [embed] });
+			await interaction.editReply({ embeds: [embed] });
 			return;
 		} else if (subcmd == 'volume') {
 			const embed = new EmbedBuilder()
@@ -227,14 +227,14 @@ module.exports = {
 				.setImage(
 					'https://cdn.discordapp.com/attachments/985143172655091792/1004930485706838106/7d75c2f90abb256b.gif'
 				);
-			await i.reply({ embeds: [embed], ephemeral: true });
+			await interaction.reply({ embeds: [embed], ephemeral: true });
 		}
 		if (!queue?.isPlaying) {
 			const errembed = new EmbedBuilder()
 				.setColor(0xff0000)
 				.setTitle('error!')
 				.setDescription('No songs are currently playing.');
-			await i.reply({ embeds: [errembed], ephemeral: true });
+			await interaction.reply({ embeds: [errembed], ephemeral: true });
 			return;
 		}
 		if (subcmd == 'skip') {
@@ -242,13 +242,13 @@ module.exports = {
 			queue.skip();
 			const embed = getsongembed(song);
 			embed.setTitle(`skiped: ${embed.data.title}`);
-			await i.reply({ embeds: [embed] });
+			await interaction.reply({ embeds: [embed] });
 		} else if (subcmd == 'stop') {
 			queue.stop();
 			const embed = new EmbedBuilder().setColor(0xffffff).setTitle('stoped!');
-			await i.reply({ embeds: [embed] });
+			await interaction.reply({ embeds: [embed] });
 		} else if (subcmd == 'loop') {
-			const mode = i.options.getNumber('mode', true);
+			const mode = interaction.options.getNumber('mode', true);
 			queue.setRepeatMode(mode);
 			const embed = new EmbedBuilder()
 				.setColor(0xffffff)
@@ -256,15 +256,15 @@ module.exports = {
 				.setDescription(
 					`Success set repeat mode to ${bold(getRepeatMode(mode))}`
 				);
-			await i.reply({ embeds: [embed] });
+			await interaction.reply({ embeds: [embed] });
 		} else if (subcmd == 'clear') {
 			queue.clearQueue();
 			const embed = new EmbedBuilder().setColor(0xffffff).setTitle('cleared!');
-			await i.reply({ embeds: [embed] });
+			await interaction.reply({ embeds: [embed] });
 		} else if (subcmd == 'shuffle') {
 			queue.shuffle();
 			const embed = new EmbedBuilder().setColor(0xffffff).setTitle('shuffled!');
-			await i.reply({ embeds: [embed] });
+			await interaction.reply({ embeds: [embed] });
 		} else if (subcmd == 'queue') {
 			const songs = queue.songs;
 			const pagelength = Math.ceil(songs.length / 10);
@@ -291,12 +291,12 @@ module.exports = {
 			const buttons = [
 				new PreviousPageButton().setStyle({
 					custom_id: 'music.queue.prev',
-					emoji: '<:left:1007601756705935440>',
+					emojinteraction: '<:left:1007601756705935440>',
 					style: ButtonStyle.Primary,
 				}),
 				new NextPageButton().setStyle({
 					custom_id: 'music.queue.next',
-					emoji: '<:right:1007601758392033321>',
+					emojinteraction: '<:right:1007601758392033321>',
 					style: ButtonStyle.Primary,
 				}),
 			];
@@ -306,14 +306,14 @@ module.exports = {
 				.setTime(880000);
 			pagination.setOnStopAction(async () => {
 				console.log('stoped!');
-				const response = await i.fetchReply();
+				const response = await interaction.fetchReply();
 				const embed = EmbedBuilder.from(response.embeds[0]).setColor(0xff0000);
 				embed.setFooter({
 					text: `${embed.data.footer?.text} This menu has expired, please use '/music queue' again.`,
 				});
-				await i.editReply({ embeds: [embed] });
+				await interaction.editReply({ embeds: [embed] });
 			});
-			pagination.send(i);
+			pagination.send(interaction);
 		} else if (subcmd == 'nowplaying') {
 			const song = queue.nowPlaying!;
 			const embed = getsongembed(song);
@@ -328,56 +328,56 @@ module.exports = {
 					'If you use the mobile client, the progress bar may have display problems.\n' +
 					'Due to the font width, the further you play, the longer the overall length of the progress bar is likely to be.',
 			});
-			await i.reply({ embeds: [embed] });
+			await interaction.reply({ embeds: [embed] });
 		} else if (subcmd == 'pause') {
 			queue.setPaused(true);
 			const song = queue.nowPlaying!;
 			const embed = getsongembed(song);
 			embed.setTitle(`paused: ${embed.data.title}`);
-			await i.reply({ embeds: [embed] });
+			await interaction.reply({ embeds: [embed] });
 		} else if (subcmd == 'resume') {
 			queue.setPaused(false);
 			const song = queue.nowPlaying!;
 			const embed = getsongembed(song);
 			embed.setTitle(`resumed: ${embed.data.title}`);
-			await i.reply({ embeds: [embed] });
+			await interaction.reply({ embeds: [embed] });
 		}
 	},
-	executeMenu: async (i: SelectMenuInteraction, player: Player) => {
-		if (!i.guild) return;
-		if (!i.inCachedGuild()) return;
-		if (!i.member.voice.channel) {
+	executeMenu: async (interaction: SelectMenuInteraction, player: Player) => {
+		if (!interaction.guild) return;
+		if (!interaction.inCachedGuild()) return;
+		if (!interaction.member.voice.channel) {
 			const errembed = new EmbedBuilder()
 				.setColor(0xff0000)
 				.setTitle('error!')
 				.setDescription(
 					'You need to join a voice channel to execute this command.'
 				);
-			await i.reply({
+			await interaction.reply({
 				embeds: [errembed],
 				ephemeral: true,
 			});
 			return;
 		}
-		const url = i.values[0];
-		const selection = i.component.options.find((item) => {
+		const url = interaction.values[0];
+		const selection = interaction.component.options.find((item) => {
 			return item.value == url;
 		});
 		const row = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
-			SelectMenuBuilder.from(i.component)
+			SelectMenuBuilder.from(interaction.component)
 				.setDisabled(true)
 				.setPlaceholder(selection?.label!)
 		);
-		await i.update({ components: [row] });
-		const queue = player.createQueue(i.guild.id);
-		await queue.join(i.member.voice.channel?.id);
+		await interaction.update({ components: [row] });
+		const queue = player.createQueue(interaction.guild.id);
+		await queue.join(interaction.member.voice.channel?.id);
 		const song = await queue.play(url);
 		const embed = getsongembed(song);
 		embed.setAuthor({
-			name: i.user.tag,
-			iconURL: i.user.displayAvatarURL(),
+			name: interaction.user.tag,
+			iconURL: interaction.user.displayAvatarURL(),
 		});
-		await i.channel?.send({ embeds: [embed] });
+		await interaction.channel?.send({ embeds: [embed] });
 	},
 };
 

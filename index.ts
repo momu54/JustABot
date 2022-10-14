@@ -62,129 +62,129 @@ async function loadcommand() {
 	console.log('Successfully reloaded application (/) commands.');
 }
 
-client.on('interactionCreate', async (i) => {
-	if (i.type == InteractionType.ApplicationCommand) {
-		if (i.commandType == ApplicationCommandType.ChatInput) {
-			const CommandFile = commands.get(i.commandName);
+client.on('interactionCreate', async (interaction) => {
+	if (interaction.type == InteractionType.ApplicationCommand) {
+		if (interaction.commandType == ApplicationCommandType.ChatInput) {
+			const CommandFile = commands.get(interaction.commandName);
 
 			if (!CommandFile) return;
 
 			try {
-				await CommandFile.execute(i);
+				await CommandFile.execute(interaction);
 			} catch (error) {
 				console.error(error);
 				const errorembed = geterrorembed(error);
 				try {
-					await i.reply({
+					await interaction.reply({
 						embeds: [errorembed],
 						ephemeral: true,
 					});
 				} catch (err) {
 					console.error(err);
-					await i.editReply({
+					await interaction.editReply({
 						embeds: [errorembed],
 					});
 				}
 			}
-		} else if (i.commandType == ApplicationCommandType.Message) {
-			const CommandFile = MessageCommands.get(i.commandName);
+		} else if (interaction.commandType == ApplicationCommandType.Message) {
+			const CommandFile = MessageCommands.get(interaction.commandName);
 
 			if (!CommandFile) return;
 
 			try {
-				await CommandFile.execute(i);
+				await CommandFile.execute(interaction);
 			} catch (error) {
 				console.error(error);
 				const errorembed = geterrorembed(error);
 				try {
-					await i.reply({
+					await interaction.reply({
 						embeds: [errorembed],
 						ephemeral: true,
 					});
 				} catch (err) {
 					console.error(err);
-					await i.editReply({
+					await interaction.editReply({
 						embeds: [errorembed],
 					});
 				}
 			}
 		}
 	}
-	if (i.type == InteractionType.MessageComponent) {
-		const CommandName = i.customId.split('.')[0];
+	if (interaction.type == InteractionType.MessageComponent) {
+		const CommandName = interaction.customId.split('.')[0];
 		const CommandFile = commands.get(CommandName);
 
 		if (!CommandFile) return;
 
-		if (i.componentType == ComponentType.Button) {
+		if (interaction.componentType == ComponentType.Button) {
 			try {
-				await CommandFile.executeBtn?.(i);
+				await CommandFile.executeBtn?.(interaction);
 			} catch (error) {
 				console.error(error);
 				const errorembed = geterrorembed(error);
 				try {
-					await i.reply({
+					await interaction.reply({
 						embeds: [errorembed],
 						ephemeral: true,
 					});
 				} catch (err) {
 					console.error(err);
-					await i.editReply({
+					await interaction.editReply({
 						embeds: [errorembed],
 					});
 				}
 			}
-		} else if (i.componentType == ComponentType.SelectMenu) {
+		} else if (interaction.componentType == ComponentType.SelectMenu) {
 			try {
-				await CommandFile.executeMenu?.(i);
+				await CommandFile.executeMenu?.(interaction);
 			} catch (error) {
 				console.error(error);
 				const errorembed = geterrorembed(error);
 				try {
-					await i.reply({
+					await interaction.reply({
 						embeds: [errorembed],
 						ephemeral: true,
 					});
 				} catch (err) {
 					console.error(err);
-					await i.editReply({
+					await interaction.editReply({
 						embeds: [errorembed],
 					});
 				}
 			}
 		}
 	}
-	if (i.type == InteractionType.ModalSubmit) {
-		const CommandName = i.customId.split('.')[0];
+	if (interaction.type == InteractionType.ModalSubmit) {
+		const CommandName = interaction.customId.split('.')[0];
 		const CommandFile = commands.get(CommandName);
 
 		if (!CommandFile) return;
 
 		try {
-			await CommandFile.executeModal?.(i);
+			await CommandFile.executeModal?.(interaction);
 		} catch (error) {
 			console.error(error);
 			const errorembed = geterrorembed(error);
 			try {
-				await i.reply({
+				await interaction.reply({
 					embeds: [errorembed],
 					ephemeral: true,
 				});
 			} catch (err) {
 				console.error(err);
-				await i.editReply({
+				await interaction.editReply({
 					embeds: [errorembed],
 				});
 			}
 		}
 	}
-	if (i.type == InteractionType.ApplicationCommandAutocomplete) {
-		const CommandFile = commands.get(i.commandName);
+	if (interaction.type == InteractionType.ApplicationCommandAutocomplete) {
+		const CommandFile = commands.get(interaction.commandName);
 
 		if (!CommandFile) return;
 
 		try {
-			await CommandFile.executeAutoComplete?.(i);
+			await CommandFile.executeAutoComplete?.(interaction);
 		} catch (error) {
 			console.error(error);
 		}

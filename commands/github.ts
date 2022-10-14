@@ -16,7 +16,7 @@ export const data = new SlashCommandBuilder()
 	.setName('github')
 	.setDescription('Github account.');
 
-export async function execute(i: ChatInputCommandInteraction) {
+export async function execute(interaction: ChatInputCommandInteraction) {
 	const row = new ActionRowBuilder<ButtonBuilder>()
 		.addComponents(
 			new ButtonBuilder()
@@ -32,12 +32,12 @@ export async function execute(i: ChatInputCommandInteraction) {
 				.setLabel('Unlink')
 				.setCustomId('github.unlink')
 		);
-	await i.reply({ components: [row], ephemeral: true });
+	await interaction.reply({ components: [row], ephemeral: true });
 }
 
-export async function executeBtn(i: ButtonInteraction) {
+export async function executeBtn(interaction: ButtonInteraction) {
 	// 取得按鈕資料
-	const args = i.customId.split('.');
+	const args = interaction.customId.split('.');
 	const action = args[1];
 	// 辨認按鈕
 	if (action == 'link') {
@@ -51,13 +51,13 @@ export async function executeBtn(i: ButtonInteraction) {
 					'Another user is currently authorizing.\nPlease try again in five minutes.'
 				);
 			// 修改回應
-			await i.reply({ embeds: [errembed], ephemeral: true });
+			await interaction.reply({ embeds: [errembed], ephemeral: true });
 			return;
 		}
 		// 改變狀態
 		issomeoneauthorizing = true;
 		// 推遲回應
-		await i.deferUpdate();
+		await interaction.deferUpdate();
 		// 發送請求
 		const res = await fetch(
 			`https://github.com/login/device/code?client_id=${process.env.githubclientid}&scope=repo`,
@@ -89,7 +89,7 @@ export async function executeBtn(i: ButtonInteraction) {
 				.setLabel('Authorization')
 		);
 		// 修改回應
-		await i.editReply({ embeds: [embed], components: [row] });
+		await interaction.editReply({ embeds: [embed], components: [row] });
 		// 向Github輪詢
 		for (const _index in InRange(30)) {
 			// 發送輪詢請求
@@ -112,7 +112,7 @@ export async function executeBtn(i: ButtonInteraction) {
 					.setTitle('Link Github account')
 					.setDescription('✅ Done!');
 				// 修改回應
-				await i.editReply({ embeds: [embed], components: [] });
+				await interaction.editReply({ embeds: [embed], components: [] });
 				return;
 			}
 			await setTimeout(10000);
@@ -123,7 +123,7 @@ export async function executeBtn(i: ButtonInteraction) {
 			.setTitle('Link Github account')
 			.setDescription('Expired, please execute the command again');
 		// 修改回應
-		await i.editReply({ embeds: [errembed], components: [] });
+		await interaction.editReply({ embeds: [errembed], components: [] });
 		// 改變狀態
 		issomeoneauthorizing = false;
 	}

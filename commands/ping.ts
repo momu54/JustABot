@@ -12,30 +12,32 @@ export const data = new SlashCommandBuilder()
 	.setName('ping')
 	.setDescription('Show websocket ping.');
 
-export async function execute(i: ChatInputCommandInteraction) {
-	let embed = getpingembed(i);
+export async function execute(interaction: ChatInputCommandInteraction) {
+	let embed = getpingembed(interaction);
 	let row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 		new ButtonBuilder()
 			.setCustomId('ping.refresh')
 			.setLabel('Refresh')
 			.setStyle(ButtonStyle.Primary)
 	);
-	await i.reply({
+	await interaction.reply({
 		embeds: [embed],
 		components: [row],
 	});
 }
 
-export async function executeBtn(i: ButtonInteraction) {
-	let embed = getpingembed(i);
-	await i.update({
+export async function executeBtn(interaction: ButtonInteraction) {
+	let embed = getpingembed(interaction);
+	await interaction.update({
 		embeds: [embed],
 	});
 }
 
-function getpingembed(i: ChatInputCommandInteraction | ButtonInteraction): EmbedBuilder {
+function getpingembed(
+	interaction: ChatInputCommandInteraction | ButtonInteraction
+): EmbedBuilder {
 	return new EmbedBuilder()
 		.setColor(0x000000)
 		.setTitle('Pong!')
-		.setDescription(`${i.client.ws.ping} ms`);
+		.setDescription(`${interaction.client.ws.ping} ms`);
 }

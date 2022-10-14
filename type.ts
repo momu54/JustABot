@@ -10,19 +10,19 @@ import {
 
 export interface Command {
 	data: SlashCommandBuilder;
-	execute(i: ChatInputCommandInteraction): Promise<void>;
-	executeBtn?(i: ButtonInteraction): Promise<void>;
-	executeMenu?(i: SelectMenuInteraction): Promise<void>;
-	executeModal?(i: ModalSubmitInteraction): Promise<void>;
-	executeAutoComplete?(i: AutocompleteInteraction): Promise<void>;
+	execute(interaction: ChatInputCommandInteraction): Promise<void>;
+	executeBtn?(interaction: ButtonInteraction): Promise<void>;
+	executeMenu?(interaction: SelectMenuInteraction): Promise<void>;
+	executeModal?(interaction: ModalSubmitInteraction): Promise<void>;
+	executeAutoComplete?(interaction: AutocompleteInteraction): Promise<void>;
 }
 
 export interface MessageCommandType {
 	data: SlashCommandBuilder;
-	execute(i: ContextMenuCommandInteraction): Promise<void>;
-	executeBtn?(i: ButtonInteraction): Promise<void>;
-	executeMenu?(i: SelectMenuInteraction): Promise<void>;
-	executeModal?(i: ModalSubmitInteraction): Promise<void>;
+	execute(interaction: ContextMenuCommandInteraction): Promise<void>;
+	executeBtn?(interaction: ButtonInteraction): Promise<void>;
+	executeMenu?(interaction: SelectMenuInteraction): Promise<void>;
+	executeModal?(interaction: ModalSubmitInteraction): Promise<void>;
 }
 
 export enum editerlanguages {
