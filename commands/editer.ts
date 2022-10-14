@@ -94,7 +94,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 			'language',
 			true
 		) as editerlanguages;
-		await CreateEditer(i, language);
+		await CreateEditer(interaction, language);
 	} else if (subcmd == 'loadfile') {
 		const Attachment = interaction.options.getAttachment('file', true);
 		const contentType = Attachment.contentType;
@@ -122,7 +122,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 		const res = await fetch(Attachment.url);
 		const file = await res.arrayBuffer();
 		const filecontent = Buffer.from(file).toString('utf8');
-		await CreateEditer(i, language, filecontent);
+		await CreateEditer(interaction, language, filecontent);
 	} else if (subcmd == 'loadfromgithub') {
 	}
 }
