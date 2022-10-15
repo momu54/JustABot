@@ -211,6 +211,10 @@ export async function executeModal(interaction: ModalSubmitInteraction) {
 	const language = args[2];
 	if (action == 'editmodal') {
 		const code = interaction.fields.getTextInputValue('editer.code');
+		// 取得原始程式碼
+		const oldcode = interaction.message?.embeds[0]
+			.description!.replaceAll('```', '')
+			.replace(`${language}\n`, '')!;
 		const embed = new EmbedBuilder()
 			.setColor(0xffffff)
 			.setTitle(`editer: ${language}`)
@@ -243,18 +247,42 @@ export async function executeModal(interaction: ModalSubmitInteraction) {
 					},
 				]);
 			}
+			proj.removeSourceFile('dummy.ts');
 		}
 		await interaction.message?.edit({ embeds: [embed] });
-	} else if (action == 'savemodal') {
-		const msg = interaction.message!;
-		const code = msg.embeds[0]
-			.description!.replaceAll('```', '')
-			.replace(`${language}\n`, '');
-		const filename = interaction.fields.getTextInputValue('editer.save.filename');
-		const AttachmentData = Buffer.from(code);
-		const Attachment = new AttachmentBuilder(AttachmentData, {
-			name: `${filename}.${language}`,
+		// 修改內容檢查
+		// 分割程式碼
+		const codelist = code.split('\n'),
+			oldcodelist = oldcode.split('\n');
+		// 比對程式碼
+		const rawchangestatus = codelist.map((line, index) => {
+			// 取得舊行
+			const oldline = oldcodelist[index];
+			if (!oldline) {
+				return `+ ${line}`;
+			} else if (line != oldline) {
+				return `- ${oldline}\n+ ${line}`;
+			} else {
+				return undefined;
+			}
 		});
+		console.log(rawchangestatus);
+		const changestatus = rawchangestatus.join('\n');
+		const statusembed = new EmbedBuilder()
+			.setColor(0xffffff)
+			.setTitle('Changed')
+			.setDescription(codeBlock('diff', changestatus));
+		await interaction.followUp({ embeds: [statusembed], ephemeral: true });
+	} else if (action == 'savemodal') {
+		const msg = interaction.message!,
+			code = msg.embeds[0]
+				.description!.replaceAll('```', '')
+				.replace(`${language}\n`, '');
+		const filename = interaction.fields.getTextInputValue('editer.save.filename'),
+			AttachmentData = Buffer.from(code),
+			Attachment = new AttachmentBuilder(AttachmentData, {
+				name: `${filename}.${language}`,
+			});
 		await interaction.reply({ files: [Attachment], ephemeral: true });
 	}
 }
