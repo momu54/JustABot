@@ -5,18 +5,61 @@ import {
 	ButtonStyle,
 	ChatInputCommandInteraction,
 	EmbedBuilder,
+	InteractionReplyOptions,
 	SlashCommandBuilder,
 } from 'discord.js';
 import { InRange } from '../utility/range.js';
 import { setTimeout } from 'timers/promises';
-// 建立狀態機
+import '../utility/database.js';
+import { tokendb } from '../utility/database.js';
+import { AuthorizedUserCache, GithubEtags, TokenDB } from '../typings/type.js';
+import { AccessToken, User } from '../typings/github.js';
+// 建立是否有人授權的狀態機
 let issomeoneauthorizing = false;
+// 建立使用者快取變數
+const usercache: AuthorizedUserCache = {};
+const useretags: GithubEtags = {};
 
 export const data = new SlashCommandBuilder()
 	.setName('github')
 	.setDescription('Github account.');
 
 export async function execute(interaction: ChatInputCommandInteraction) {
+	// 建立embed
+	let embed;
+	// 從資料庫取得token
+	const token = await tokendb.get<TokenDB>(
+		`SELECT Token FROM accounts WHERE Discord="${interaction.user.id}"`
+	);
+	// 如果token存在
+	if (token) {
+		// 取得使用者
+		const res = await fetch('https://api.github.com/user', {
+			headers: {
+				Accept: 'application/vnd.github+json',
+				Authorization: `Bearer ${token.Token}`,
+				'If-None-Match': useretags[interaction.user.id],
+			},
+		});
+		let jsonres: User;
+		if (res.status == 304) {
+			jsonres = usercache[interaction.user.id];
+		} else {
+			jsonres = await res.json();
+			usercache[interaction.user.id] = jsonres;
+			useretags[interaction.user.id] = res.headers.get('ETag')!;
+		}
+		// 取得json回應
+		embed = new EmbedBuilder()
+			.setTitle('Github account')
+			.setDescription('Manage your github account.')
+			.setAuthor({
+				iconURL: jsonres.avatar_url,
+				name: jsonres.login,
+			})
+			.setColor(0xffffff);
+	}
+	// 建立按鈕
 	const row = new ActionRowBuilder<ButtonBuilder>()
 		.addComponents(
 			new ButtonBuilder()
@@ -31,14 +74,31 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 				.setEmoji('❎')
 				.setLabel('Unlink')
 				.setCustomId('github.unlink')
+				.setDisabled()
 		);
-	await interaction.reply({ components: [row], ephemeral: true });
+	let replydata: InteractionReplyOptions;
+	// 如果embed存在
+	if (embed) {
+		replydata = {
+			embeds: [embed],
+			components: [row],
+			ephemeral: true,
+		};
+	} else {
+		replydata = {
+			components: [row],
+			ephemeral: true,
+		};
+	}
+	await interaction.reply(replydata);
 }
 
 export async function executeBtn(interaction: ButtonInteraction) {
 	// 取得按鈕資料
 	const args = interaction.customId.split('.');
 	const action = args[1];
+	// 推遲回應
+	await interaction.deferUpdate();
 	// 辨認按鈕
 	if (action == 'link') {
 		// 如果有人正在授權
@@ -56,8 +116,6 @@ export async function executeBtn(interaction: ButtonInteraction) {
 		}
 		// 改變狀態
 		issomeoneauthorizing = true;
-		// 推遲回應
-		await interaction.deferUpdate();
 		// 發送請求
 		const res = await fetch(
 			`https://github.com/login/device/code?client_id=${process.env.githubclientid}&scope=repo`,
@@ -68,7 +126,7 @@ export async function executeBtn(interaction: ButtonInteraction) {
 				},
 			}
 		);
-		// 取得json請求
+		// 取得json回應
 		const jsonres = await res.json();
 		// 建立embed
 		const embed = new EmbedBuilder()
@@ -103,7 +161,7 @@ export async function executeBtn(interaction: ButtonInteraction) {
 				}
 			);
 			// 取得json請求
-			const pollsjsonres = await res.json();
+			const pollsjsonres: AccessToken = await res.json();
 			// 如果完成登入
 			if (!pollsjsonres.error) {
 				// 建立embed
@@ -113,6 +171,11 @@ export async function executeBtn(interaction: ButtonInteraction) {
 					.setDescription('✅ Done!');
 				// 修改回應
 				await interaction.editReply({ embeds: [embed], components: [] });
+				// 加入資料庫
+				await tokendb.run('INSERT INTO accounts VALUES(?, ?)', [
+					interaction.user.id,
+					pollsjsonres.access_token,
+				]);
 				return;
 			}
 			await setTimeout(10000);
@@ -126,5 +189,13 @@ export async function executeBtn(interaction: ButtonInteraction) {
 		await interaction.editReply({ embeds: [errembed], components: [] });
 		// 改變狀態
 		issomeoneauthorizing = false;
+	} else if (action == 'unlink') {
+		// 移除資料庫
+		await tokendb.run(`DELETE FROM accounts WHERE Discord=${interaction.user.id}`);
+		const embed = new EmbedBuilder()
+			.setColor(0x00ff00)
+			.setTitle('Unlink Github account')
+			.setDescription('✅ Done!');
+		await interaction.editReply({ embeds: [embed], components: [] });
 	}
 }

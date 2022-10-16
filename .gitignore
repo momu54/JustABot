@@ -106,4 +106,4 @@ dist
 *.js
 ./**/.js
 
-cache/
+database/

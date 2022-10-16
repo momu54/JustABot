@@ -18,7 +18,7 @@ import {
 	TextInputStyle,
 } from 'discord.js';
 import { createProject, ts } from '@ts-morph/bootstrap';
-import { editerlanguages, GithubCache, GithubEtags } from '../type.js';
+import { editerlanguages, GithubCache, GithubEtags } from '../typings/type.js';
 const githubrepocache: GithubCache = {};
 const githubrepoetags: GithubEtags = {};
 const githubusercache: GithubCache = {};
@@ -258,10 +258,13 @@ export async function executeModal(interaction: ModalSubmitInteraction) {
 		const rawchangestatus = codelist.map((line, index) => {
 			// 取得舊行
 			const oldline = oldcodelist[index];
+			// 如果此行為新行
 			if (!oldline) {
 				return `+ ${line}`;
+				// 如果此行被修改
 			} else if (line != oldline) {
 				return `- ${oldline}\n+ ${line}`;
+				// 如果甚麼都不是
 			} else {
 				return undefined;
 			}

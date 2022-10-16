@@ -7,13 +7,12 @@ import {
 	EmbedBuilder,
 	GatewayIntentBits,
 	InteractionType,
-	SlashCommandBuilder,
+	//	SlashCommandBuilder,
 } from 'discord.js';
 import 'dotenv/config';
 import path from 'path';
 import fs from 'fs';
-// import { Player } from 'discord-music-player';
-import { Command, MessageCommandType } from './type.js';
+import { Command, MessageCommandType } from './typings/type.js';
 // load other features
 import { execute, ExecuteChannelCreate } from './other/voicechannel.js';
 
@@ -25,12 +24,7 @@ const client = new Client({
 		GatewayIntentBits.Guilds,
 	],
 });
-// const player = new Player(client, {
-// 	deafenOnJoin: true,
-// 	leaveOnEmpty: true,
-// 	leaveOnStop: true,
-// 	leaveOnEnd: true,
-// });
+
 let commands = new Collection<string, Command>();
 let MessageCommands = new Collection<string, MessageCommandType>();
 const CommandsPath = path.join('./', 'commands');
@@ -43,7 +37,7 @@ client.on('ready', async () => {
 });
 
 async function loadcommand() {
-	const clientcommands = client.application?.commands;
+	// const clientcommands = client.application?.commands;
 	console.log('Started refreshing application (/) commands.');
 	for (const file of CommandsFiles) {
 		const filePath = `./commands/${file}`;
@@ -55,10 +49,10 @@ async function loadcommand() {
 		const command = (await import(filePath)) as MessageCommandType;
 		MessageCommands.set(command.data.name, command);
 	}
-	const AllCommands: SlashCommandBuilder[] = [...commands, ...MessageCommands].map(
-		(command) => command[1].data
-	);
-	await clientcommands?.set(AllCommands);
+	// const AllCommands: SlashCommandBuilder[] = [...commands, ...MessageCommands].map(
+	// 	(command) => command[1].data
+	// );
+	// await clientcommands?.set(AllCommands);
 	console.log('Successfully reloaded application (/) commands.');
 }
 
