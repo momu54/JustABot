@@ -74,7 +74,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 				.setEmoji('❎')
 				.setLabel('Unlink')
 				.setCustomId('github.unlink')
-				.setDisabled()
+				.setDisabled(!token)
 		);
 	let replydata: InteractionReplyOptions;
 	// 如果embed存在
@@ -111,7 +111,7 @@ export async function executeBtn(interaction: ButtonInteraction) {
 					'Another user is currently authorizing.\nPlease try again in five minutes.'
 				);
 			// 修改回應
-			await interaction.reply({ embeds: [errembed], ephemeral: true });
+			await interaction.editReply({ embeds: [errembed] });
 			return;
 		}
 		// 改變狀態
@@ -190,12 +190,13 @@ export async function executeBtn(interaction: ButtonInteraction) {
 		// 改變狀態
 		issomeoneauthorizing = false;
 	} else if (action == 'unlink') {
-		// 移除資料庫
-		await tokendb.run(`DELETE FROM accounts WHERE Discord=${interaction.user.id}`);
+		// 從資料庫移除
+		await tokendb.run(`DELETE FROM accounts WHERE Discord="${interaction.user.id}"`);
 		const embed = new EmbedBuilder()
 			.setColor(0x00ff00)
 			.setTitle('Unlink Github account')
 			.setDescription('✅ Done!');
+		// 修改回應
 		await interaction.editReply({ embeds: [embed], components: [] });
 	}
 }
