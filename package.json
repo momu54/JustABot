@@ -5,9 +5,10 @@
 	"main": "index.ts",
 	"types": "index.d.ts",
 	"scripts": {
-		"start": "nodemon ./app.ts",
+		"start": "node --loader ts-node/esm ./app.ts",
 		"compile": "tsc",
-		"start:d": "node --loader ts-node/esm ./app.ts"
+		"start:dev": "nodemon ./app.ts",
+		"build": "docker build -t momualt/justabot . --no-cache"
 	},
 	"repository": {
 		"type": "git",
