@@ -41,6 +41,7 @@ async function loadcommand() {
 	console.log('Started refreshing application (/) commands.');
 	for (const file of CommandsFiles) {
 		const filePath = `./commands/${file}`;
+		if (!file.endsWith('.ts')) continue;
 		const command = (await import(filePath)) as Command;
 		commands.set(command.data.name, command);
 	}

@@ -6,7 +6,8 @@
 	"types": "index.d.ts",
 	"scripts": {
 		"start": "nodemon ./index.ts",
-		"compile": "tsc"
+		"compile": "tsc",
+		"start:d": "node --loader ts-node/esm ./app.ts"
 	},
 	"repository": {
 		"type": "git",
@@ -19,6 +20,10 @@
 	},
 	"homepage": "https://github.com/YueMu1022/MuYue-rewrite#readme",
 	"dependencies": {
+		"@octokit/auth-oauth-app": "^5.0.4",
+		"@octokit/auth-oauth-device": "^4.0.3",
+		"@octokit/rest": "^19.0.5",
+		"@octokit/types": "^8.0.0",
 		"@ts-morph/bootstrap": "^0.17.0",
 		"discord.js": "^14.6.0",
 		"dotenv": "^16.0.3",

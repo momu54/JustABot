@@ -20,6 +20,6 @@
 		"alwaysStrict": true,
 		"moduleResolution": "NodeNext"
 	},
-	"include": ["index.ts", "commands/*.ts", "MessageCommands/*.ts"],
+	"include": ["app.ts", "commands/*.ts", "MessageCommands/*.ts"],
 	"exclude": ["node_modules/**", "cache/*"]
 }

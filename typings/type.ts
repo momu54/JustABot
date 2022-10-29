@@ -51,4 +51,10 @@ export interface AuthorizedUserCache {
 
 export interface TokenDB {
 	Token: string;
+	timestamp: string;
+	Discord: string;
+}
+
+export interface GithubCommandFile {
+	execute(): Promise<void>;
 }

@@ -6,3 +6,4 @@ export const tokendb = await sqlite.open({
 	driver: sqlite3.Database,
 	mode: sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
 });
+

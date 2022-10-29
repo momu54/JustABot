@@ -124,6 +124,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 		const filecontent = Buffer.from(file).toString('utf8');
 		await CreateEditer(interaction, language, filecontent);
 	} else if (subcmd == 'loadfromgithub') {
+		// 取得檔案路徑
+		// const filepath = interaction.options.getString('path', true);
+		// if (!filepath.includes(';')) {
+		// 	const embed = new EmbedBuilder();
+		// 	await interaction.reply();
+		// }
 	}
 }
 
@@ -341,7 +347,7 @@ export async function executeAutoComplete(interaction: AutocompleteInteraction) 
 		}
 		if (pathinput.endsWith('/')) {
 			const res = await fetch(
-				`https://apinteraction.github.com/repos/${username}/${repo}/contents/${pathinput}`,
+				`https://api.github.com/repos/${username}/${repo}/contents/${pathinput}`,
 				{
 					headers: {
 						Authorization: process.env.githubauth!,
