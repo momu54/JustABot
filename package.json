@@ -5,7 +5,7 @@
 	"main": "index.ts",
 	"types": "index.d.ts",
 	"scripts": {
-		"start": "nodemon ./index.ts",
+		"start": "nodemon ./app.ts",
 		"compile": "tsc",
 		"start:d": "node --loader ts-node/esm ./app.ts"
 	},
