@@ -12,7 +12,7 @@ import { CheckTokenExpired } from '../../utility/github.js';
 export async function execute(interaction: ButtonInteraction) {
 	// 從資料庫取得token
 	const token = await tokendb.get<TokenDB>(
-		`SELECT FROM accounts WHERE Discord="${interaction.user.id}"`
+		`SELECT * FROM accounts WHERE Discord="${interaction.user.id}"`
 	);
 	await CheckTokenExpired(token);
 	// 建立 embed
