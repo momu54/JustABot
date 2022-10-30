@@ -43,5 +43,4 @@ jobs:
               uses: docker/build-push-action@v3
               with:
                   push: true
-                  tags: ${{ secrets.DOCKERHUB_USERNAME }}/justabot:latest,
-                  ${{ secrets.DOCKERHUB_USERNAME }}/justabot:${{ github.sha }}
+                  tags: ${{ secrets.DOCKERHUB_USERNAME }}/justabot:latest,${{ secrets.DOCKERHUB_USERNAME }}/justabot:${{ github.sha }}
