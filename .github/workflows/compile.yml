@@ -1,4 +1,4 @@
-name: Compile typescript
+name: Compile and push
 
 on:
     push:
@@ -13,20 +13,15 @@ jobs:
                 node-version: [latest]
 
         steps:
-            - uses: actions/checkout@latest
+            - uses: actions/checkout@v3
             - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@latest
+              uses: actions/setup-node@v3
               with:
                   node-version: ${{ matrix.node-version }}
             - name: Install dependencies
               run: npm i
             - name: Compile
               run: npm run compile
-            - name: Upload artifact
-              uses: actions/upload-artifact@latest
-              with:
-                  name: artifact
-                  path: out/
     Push:
         runs-on: ubuntu-latest
 
@@ -35,7 +30,7 @@ jobs:
                 node-version: [latest]
 
         steps:
-            - uses: actions/checkout@latest
+            - uses: actions/checkout@v3
             - name: Set up QEMU
               uses: docker/setup-qemu-action@v2
             - name: Set up Docker Buildx
