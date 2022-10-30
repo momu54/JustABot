@@ -6,14 +6,3 @@
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/YueMu1022/AltF4Bot)
 
 Just a bot.
-
-## Acknowledgments
-
-### Package
-
-| Name                | Link                                                                          |
-| ------------------- | ----------------------------------------------------------------------------- |
-| @ts-morph/bootstrap | [Github](https://github.com/dsherret/ts-morph/tree/latest/packages/bootstrap) |
-| discord.js          | [Github](https://github.com/discordjs/discord.js)                             |
-| dotenv              | [Github](https://github.com/motdotla/dotenv)                                  |
-| jimp                | [Github](https://github.com/oliver-moran/jimp)                                |
