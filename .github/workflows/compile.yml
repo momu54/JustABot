@@ -24,7 +24,6 @@ jobs:
               run: npm run compile
     Push:
         runs-on: ubuntu-latest
-
         strategy:
             matrix:
                 node-version: [latest]
@@ -44,4 +43,5 @@ jobs:
               uses: docker/build-push-action@v3
               with:
                   push: true
-                  tags: ${{ secrets.DOCKERHUB_USERNAME }}/justabot:latest
+                  tags: ${{ secrets.DOCKERHUB_USERNAME }}/justabot:latest,
+                  ${{ secrets.DOCKERHUB_USERNAME }}/justabot:${{ github.sha }}
