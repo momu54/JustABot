@@ -1,5 +1,5 @@
-import { TokenDB } from '../typings/type';
-import { tokendb } from './database';
+import { TokenDB } from '../typings/type.js';
+import { tokendb } from './database.js';
 
 export async function CheckTokenExpired(res: TokenDB | undefined) {
 	if (!res) return;
