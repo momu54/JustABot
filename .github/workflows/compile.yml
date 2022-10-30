@@ -44,4 +44,4 @@ jobs:
               uses: docker/build-push-action@v3
               with:
                   push: true
-                  tags: momualt/justabot:latest
+                  tags: ${{ secrets.DOCKERHUB_USERNAME }}}/justabot:latest
