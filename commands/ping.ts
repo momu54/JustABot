@@ -37,7 +37,7 @@ function getpingembed(
 	interaction: ChatInputCommandInteraction | ButtonInteraction
 ): EmbedBuilder {
 	return new EmbedBuilder()
-		.setColor(0x000000)
+		.setColor(0xffffff)
 		.setTitle('Pong!')
 		.setDescription(`${interaction.client.ws.ping} ms`);
 }

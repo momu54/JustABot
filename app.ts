@@ -7,7 +7,7 @@ import {
 	EmbedBuilder,
 	GatewayIntentBits,
 	InteractionType,
-	//	SlashCommandBuilder,
+	Events,
 } from 'discord.js';
 import 'dotenv/config';
 import path from 'path';
@@ -57,7 +57,7 @@ async function loadcommand() {
 	console.log('Successfully reloaded application (/) commands.');
 }
 
-client.on('interactionCreate', async (interaction) => {
+client.on(Events.InteractionCreate, async (interaction) => {
 	if (interaction.type == InteractionType.ApplicationCommand) {
 		if (interaction.commandType == ApplicationCommandType.ChatInput) {
 			const CommandFile = commands.get(interaction.commandName);
@@ -111,27 +111,14 @@ client.on('interactionCreate', async (interaction) => {
 
 		if (!CommandFile) return;
 
+		if (CommandName == 'github') {
+			await CommandFile.executeModule?.(interaction);
+			return;
+		}
+
 		if (interaction.componentType == ComponentType.Button) {
 			try {
 				await CommandFile.executeBtn?.(interaction);
-			} catch (error) {
-				console.error(error);
-				const errorembed = geterrorembed(error);
-				try {
-					await interaction.reply({
-						embeds: [errorembed],
-						ephemeral: true,
-					});
-				} catch (err) {
-					console.error(err);
-					await interaction.editReply({
-						embeds: [errorembed],
-					});
-				}
-			}
-		} else if (interaction.componentType == ComponentType.SelectMenu) {
-			try {
-				await CommandFile.executeMenu?.(interaction);
 			} catch (error) {
 				console.error(error);
 				const errorembed = geterrorembed(error);
@@ -154,6 +141,11 @@ client.on('interactionCreate', async (interaction) => {
 		const CommandFile = commands.get(CommandName);
 
 		if (!CommandFile) return;
+
+		if (CommandName == 'github') {
+			await CommandFile.executeModule?.(interaction);
+			return;
+		}
 
 		try {
 			await CommandFile.executeModal?.(interaction);

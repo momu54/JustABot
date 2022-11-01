@@ -1,3 +1,17 @@
-import { ButtonInteraction } from 'discord.js';
+import { ButtonInteraction, EmbedBuilder } from 'discord.js';
+import { tokendb } from '../../../utility/database.js';
 
-export async function execute(interaction: ButtonInteraction) {}
+export async function execute(interaction: ButtonInteraction) {
+	await interaction.deferUpdate();
+	// 從資料庫移除
+	await tokendb.run(`DELETE FROM accounts WHERE Discord="${interaction.user.id}"`);
+	const embed = new EmbedBuilder()
+		.setColor(0x00ff00)
+		.setTitle('Unlink Github account')
+		.setDescription('✅ Done!');
+	// 修改回應
+	await interaction.editReply({
+		embeds: [embed],
+		components: [],
+	});
+}
