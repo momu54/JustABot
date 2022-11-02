@@ -27,6 +27,7 @@ export async function loadrepo(values: string[]) {
 			width: 1200,
 			height: 1000,
 		},
+		args: ['--no-sandbox'],
 	});
 	// 開啟新分頁
 	const page = await browser.newPage();
