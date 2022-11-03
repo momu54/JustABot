@@ -7,10 +7,11 @@ import {
 } from 'discord.js';
 import { GetToken } from '../../utility/github.js';
 import { Octokit } from '@octokit/rest';
+import { DeferUpdate } from '../../utility/other.js';
 
 export async function execute(interaction: ButtonInteraction) {
 	// 推遲回應
-	await interaction.deferUpdate();
+	await DeferUpdate(interaction);
 	// 取得 token
 	const tokenres = await GetToken(interaction.user.id);
 	// 建立按鈕

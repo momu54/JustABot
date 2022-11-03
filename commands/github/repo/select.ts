@@ -1,9 +1,10 @@
 import { SelectMenuInteraction } from 'discord.js';
+import { DeferUpdate } from '../../../utility/other.js';
 import { loadrepo } from './load.js';
 
 export async function execute(interaction: SelectMenuInteraction) {
 	// 推遲回應
-	await interaction.deferUpdate();
+	await DeferUpdate(interaction);
 	// 取得儲存庫資料
 	const data = await loadrepo(interaction.values);
 	// 回應

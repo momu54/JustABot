@@ -19,6 +19,7 @@ import {
 } from 'discord.js';
 import { createProject, ts } from '@ts-morph/bootstrap';
 import { editerlanguages, GithubCache, GithubEtags } from '../typings/type.js';
+import { DeferUpdate } from '../utility/other.js';
 const githubrepocache: GithubCache = {};
 const githubrepoetags: GithubEtags = {};
 const githubusercache: GithubCache = {};
@@ -228,7 +229,7 @@ export async function executeModal(interaction: ModalSubmitInteraction) {
 			.setFooter({
 				text: `Detection problem only works with typescript.`,
 			});
-		await interaction.deferUpdate();
+		await DeferUpdate(interaction);
 		// Check typescript
 		if (language == 'ts') {
 			const proj = await createProject({ useInMemoryFileSystem: true });

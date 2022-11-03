@@ -6,10 +6,11 @@ import {
 	SelectMenuOptionBuilder,
 } from 'discord.js';
 import { appoctokit } from '../../../../utility/github.js';
+import { DeferUpdate } from '../../../../utility/other.js';
 
 export async function execute(interaction: ModalMessageModalSubmitInteraction) {
 	// 推遲回應
-	await interaction.deferUpdate();
+	await DeferUpdate(interaction);
 	// 取得關鍵字
 	const keyword = interaction.fields.getTextInputValue('github.repo.search.keyword');
 	// 取得搜索结果

@@ -1,8 +1,9 @@
 import { ButtonInteraction, EmbedBuilder } from 'discord.js';
 import { tokendb } from '../../../utility/database.js';
+import { DeferUpdate } from '../../../utility/other.js';
 
 export async function execute(interaction: ButtonInteraction) {
-	await interaction.deferUpdate();
+	await DeferUpdate(interaction);
 	// 從資料庫移除
 	await tokendb.run(`DELETE FROM accounts WHERE Discord="${interaction.user.id}"`);
 	const embed = new EmbedBuilder()

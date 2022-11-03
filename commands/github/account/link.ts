@@ -7,6 +7,7 @@ import {
 } from 'discord.js';
 import { createOAuthDeviceAuth } from '@octokit/auth-oauth-device';
 import { tokendb } from '../../../utility/database.js';
+import { DeferUpdate } from '../../../utility/other.js';
 
 // 建立是否有人授權的狀態機
 let issomeoneauthorizing = false;
@@ -26,7 +27,7 @@ export async function execute(interaction: ButtonInteraction) {
 		return;
 	}
 	// 推遲回應
-	await interaction.deferUpdate();
+	await DeferUpdate(interaction);
 	// 改變狀態
 	issomeoneauthorizing = true;
 	// 生成設備代碼
