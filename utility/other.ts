@@ -14,6 +14,6 @@ export async function DeferUpdate(
 	// 建立embed
 	const embed = new EmbedBuilder()
 		.setTitle('<a:Rolling:1037669173939150848> Processing...')
-		.setColor(0xffffff);
+		.setColor(0xffff00);
 	await i.update({ embeds: [embed], components: [] });
 }
