@@ -12,7 +12,7 @@ import { DeferUpdate } from '../../../utility/other.js';
 // 建立是否有人授權的狀態機
 let issomeoneauthorizing = false;
 
-export async function execute(interaction: ButtonInteraction) {
+export async function execute(interaction: ButtonInteraction, _query: string[]) {
 	// 如果有人正在授權
 	if (issomeoneauthorizing) {
 		// 建立錯誤embed

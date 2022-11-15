@@ -1,18 +1,34 @@
-import { AttachmentBuilder, EmbedBuilder, WebhookEditMessageOptions } from 'discord.js';
+import { OctokitResponse } from '@octokit/types';
+import {
+	ActionRowBuilder,
+	AttachmentBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	EmbedBuilder,
+	WebhookEditMessageOptions,
+} from 'discord.js';
 import { launch } from 'puppeteer';
-import { appoctokit, stylehtml } from '../../../utility/github.js';
+import {
+	appoctokit,
+	GetAuthenticatedOctokit,
+	stylehtml,
+} from '../../../utility/github.js';
 
-export async function loadrepo(values: string[]) {
+export async function loadrepo(
+	values: string[],
+	user: string
+): Promise<WebhookEditMessageOptions> {
 	// 取得儲存庫名稱及所有者
 	const repofullname = values[0];
 	const reponamedata = repofullname.split('/');
 	const reponame = reponamedata[1];
 	const repoowner = reponamedata[0];
 	// 取得儲存庫資訊
-	const { data } = await appoctokit.rest.repos.get({
+	const { data: repo } = await appoctokit.rest.repos.get({
 		repo: reponame,
 		owner: repoowner,
 	});
+	// FIXME: any type
 	// 取得 readme
 	const readme: any = await appoctokit.rest.repos
 		.getReadme({
@@ -28,16 +44,38 @@ export async function loadrepo(values: string[]) {
 				status: err.status,
 			};
 		});
+	let isstaredstatuscode: number = 404;
+	// get octokit
+	const octokit = await GetAuthenticatedOctokit(user);
+	if (octokit) {
+		// get star status
+		({ status: isstaredstatuscode } = await octokit.rest.activity
+			.checkRepoIsStarredByAuthenticatedUser({
+				repo: reponame,
+				owner: repoowner,
+			})
+			.catch((res: OctokitResponse<never, 404>) => {
+				return res;
+			}));
+	}
 	// 建立 embed
 	const embed = new EmbedBuilder()
-		.setTitle(data.full_name)
-		.setDescription(data.description)
-		.setAuthor({ name: data.owner.login, iconURL: data.owner.avatar_url })
+		.setTitle(repo.full_name)
+		.setDescription(repo.description)
+		.setAuthor({ name: repo.owner.login, iconURL: repo.owner.avatar_url })
 		.setColor(0xffffff);
-	// 回傳資料
+	// create actionrow
+	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+		new ButtonBuilder()
+			.setCustomId(`github.repo.star?${repoowner},${reponame}`)
+			.setDisabled(!octokit)
+			.setLabel(isstaredstatuscode == 204 ? '★' : '☆')
+			.setStyle(ButtonStyle.Primary)
+	);
+	// 準備要回傳的資料
 	const msgplayload: WebhookEditMessageOptions = {
 		embeds: [embed],
-		components: [],
+		components: [row],
 	};
 	if (readme.status == 200) {
 		// 啟動樓覽器

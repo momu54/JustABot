@@ -3,6 +3,12 @@ import { Octokit } from '@octokit/rest';
 import { TokenDB } from '../typings/type.js';
 import { tokendb } from './database.js';
 import { readFile } from 'fs/promises';
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonComponent,
+	ButtonInteraction,
+} from 'discord.js';
 
 async function CheckTokenExpired(res?: TokenDB) {
 	if (!res) return;
@@ -31,11 +37,49 @@ const auth = createOAuthAppAuth({
 	clientType: 'oauth-app',
 });
 // 建立Octokit實例
-export const appoctokit = new Octokit({
+export const appoctokit: Octokit = new Octokit({
 	auth: auth,
 	authStrategy: createOAuthAppAuth,
 });
 
-const stylecss = await readFile('./utility/mdstyle.css');
+const stylecss: Buffer = await readFile('./utility/mdstyle.css');
 
-export const stylehtml = `<style>${stylecss}</style>`;
+export const stylehtml: string = `<style>${stylecss}</style>`;
+
+export function GetAndEditButtonActionRow(
+	interaction: ButtonInteraction,
+	index: number,
+	teststr: string,
+	whentrue: string,
+	isemoji: boolean = false
+): ActionRowBuilder<ButtonBuilder> {
+	const interactionbtn = interaction.component;
+	const filteredcomponents = interaction.message.components[0].components.filter(
+		(btn) => btn != interaction.component
+	) as ButtonComponent[];
+	const mappedcomponents = filteredcomponents.map((btn) => ButtonBuilder.from(btn));
+	mappedcomponents.splice(
+		index,
+		0,
+		ButtonBuilder.from(interaction.component).setLabel(
+			isemoji
+				? interactionbtn.emoji == teststr
+					? whentrue
+					: teststr
+				: interactionbtn.label == teststr
+				? whentrue
+				: teststr
+		)
+	);
+	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(mappedcomponents);
+	return row;
+}
+
+export async function GetAuthenticatedOctokit(user: string): Promise<Octokit | false> {
+	const tokenres = await GetToken(user);
+	if (tokenres)
+		return new Octokit({
+			auth: tokenres.Token,
+		});
+	else return false;
+}

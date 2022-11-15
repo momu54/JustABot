@@ -143,6 +143,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		if (!CommandFile) return;
 
 		if (CommandName == 'github') {
+			if (!interaction.isFromMessage()) return;
 			await CommandFile.executeModule?.(interaction);
 			return;
 		}

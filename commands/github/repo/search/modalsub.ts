@@ -8,7 +8,10 @@ import {
 import { appoctokit } from '../../../../utility/github.js';
 import { DeferUpdate } from '../../../../utility/other.js';
 
-export async function execute(interaction: ModalMessageModalSubmitInteraction) {
+export async function execute(
+	interaction: ModalMessageModalSubmitInteraction,
+	_query: string[]
+) {
 	// 推遲回應
 	await DeferUpdate(interaction);
 	// 取得關鍵字
@@ -25,7 +28,7 @@ export async function execute(interaction: ModalMessageModalSubmitInteraction) {
 	);
 	// 建立 SelectMenu
 	const menu = new SelectMenuBuilder()
-		.setCustomId('github.repo.select')
+		.setCustomId(`github.repo.select`)
 		.setPlaceholder('Choose a repository...')
 		.addOptions(options);
 	// 建立 ActionRow

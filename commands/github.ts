@@ -6,7 +6,7 @@ import {
 	ButtonStyle,
 	ChatInputCommandInteraction,
 	EmbedBuilder,
-	ModalSubmitInteraction,
+	ModalMessageModalSubmitInteraction,
 	SelectMenuInteraction,
 	SlashCommandBuilder,
 } from 'discord.js';
@@ -46,9 +46,13 @@ export async function execute(
 }
 
 export async function executeModule(
-	interaction: SelectMenuInteraction | ButtonInteraction | ModalSubmitInteraction
+	interaction:
+		| SelectMenuInteraction
+		| ButtonInteraction
+		| ModalMessageModalSubmitInteraction
 ) {
-	const path = './' + interaction.customId.replaceAll('.', '/') + '.js';
+	const query = interaction.customId.split('?')[1]?.split(',');
+	const path = './' + interaction.customId.replaceAll('.', '/').split('?')[0] + '.js';
 	const filecontent = await import(path);
-	await filecontent.execute(interaction);
+	await filecontent.execute(interaction, query);
 }

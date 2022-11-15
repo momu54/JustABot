@@ -1,4 +1,3 @@
-import { Octokit } from '@octokit/rest';
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -8,14 +7,12 @@ import {
 	SelectMenuBuilder,
 	SelectMenuOptionBuilder,
 } from 'discord.js';
-import { GetToken } from '../../utility/github.js';
+import { GetAuthenticatedOctokit } from '../../utility/github.js';
 import { DeferUpdate } from '../../utility/other.js';
 
-export async function execute(interaction: ButtonInteraction) {
+export async function execute(interaction: ButtonInteraction, _query: string[]) {
 	// 推遲回應
 	await DeferUpdate(interaction);
-	// 取得 token
-	const tokenres = await GetToken(interaction.user.id);
 	// 建立 Embed
 	const embed = new EmbedBuilder()
 		.setColor(0xffffff)
@@ -23,20 +20,17 @@ export async function execute(interaction: ButtonInteraction) {
 		.setDescription(
 			'Open a repository.\nThe selector can only display 25 items, if the repository you need is not on it, use search.'
 		);
+	// 取得 Octokit 實例
+	const octokit = await GetAuthenticatedOctokit(interaction.user.id);
 	// 建立 SelectMenu
 	const menu = new SelectMenuBuilder()
-		.setCustomId('github.repo.select')
+		.setCustomId(`github.repo.select`)
 		.setPlaceholder(
-			tokenres ? 'Choose a repository...' : 'You need authorization to use.'
+			octokit ? 'Choose a repository...' : 'You need authorization to use.'
 		)
-		.setDisabled(!tokenres);
-	if (tokenres) {
-		const octokit = new Octokit({
-			auth: tokenres.Token,
-		});
-		const user = await octokit.users.getAuthenticated();
-		const { data } = await octokit.rest.repos.listForUser({
-			username: user.data.login,
+		.setDisabled(!octokit);
+	if (octokit) {
+		const { data } = await octokit.rest.repos.listForAuthenticatedUser({
 			per_page: 25,
 		});
 		const options = data.map((repo) =>
@@ -49,7 +43,7 @@ export async function execute(interaction: ButtonInteraction) {
 	// 建立 ActionRow
 	const btnrow = new ActionRowBuilder<ButtonBuilder>().addComponents(
 		new ButtonBuilder()
-			.setCustomId('github.repo.search')
+			.setCustomId(`github.repo.search?${!!octokit}`)
 			.setEmoji('🔎')
 			.setStyle(ButtonStyle.Primary)
 	);

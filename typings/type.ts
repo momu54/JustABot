@@ -6,6 +6,7 @@ import {
 	SlashCommandBuilder,
 	AutocompleteInteraction,
 	SelectMenuInteraction,
+	ModalMessageModalSubmitInteraction,
 } from 'discord.js';
 
 export interface Command {
@@ -15,7 +16,10 @@ export interface Command {
 	executeModal?(interaction: ModalSubmitInteraction): Promise<void>;
 	executeAutoComplete?(interaction: AutocompleteInteraction): Promise<void>;
 	executeModule?(
-		interaction: SelectMenuInteraction | ButtonInteraction | ModalSubmitInteraction
+		interaction:
+			| SelectMenuInteraction
+			| ButtonInteraction
+			| ModalMessageModalSubmitInteraction
 	): Promise<void>;
 }
 

@@ -9,11 +9,11 @@ export function InRange(size: number) {
 }
 
 export async function DeferUpdate(
-	i: MessageComponentInteraction | ModalMessageModalSubmitInteraction
+	interaction: MessageComponentInteraction | ModalMessageModalSubmitInteraction
 ) {
 	// 建立embed
 	const embed = new EmbedBuilder()
 		.setTitle('<a:Rolling:1037669173939150848> Processing...')
-		.setColor(0xffff00);
-	await i.update({ embeds: [embed], components: [] });
+		.setColor(0xffaa00);
+	await interaction.update({ embeds: [embed], components: [] });
 }

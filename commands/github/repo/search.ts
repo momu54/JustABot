@@ -6,11 +6,11 @@ import {
 	TextInputStyle,
 } from 'discord.js';
 
-export async function execute(interaction: ButtonInteraction) {
+export async function execute(interaction: ButtonInteraction, _query: string[]) {
 	// 建立 modal
 	const modal = new ModalBuilder()
 		.setTitle('Search')
-		.setCustomId('github.repo.search.modalsub')
+		.setCustomId(`github.repo.search.modalsub`)
 		.addComponents(
 			new ActionRowBuilder<TextInputBuilder>().addComponents(
 				new TextInputBuilder()

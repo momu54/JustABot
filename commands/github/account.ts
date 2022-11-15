@@ -9,7 +9,7 @@ import { GetToken } from '../../utility/github.js';
 import { Octokit } from '@octokit/rest';
 import { DeferUpdate } from '../../utility/other.js';
 
-export async function execute(interaction: ButtonInteraction) {
+export async function execute(interaction: ButtonInteraction, _query: string[]) {
 	// 推遲回應
 	await DeferUpdate(interaction);
 	// 取得 token
