@@ -142,13 +142,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 		if (!CommandFile) return;
 
-		if (CommandName == 'github') {
-			if (!interaction.isFromMessage()) return;
-			await CommandFile.executeModule?.(interaction);
-			return;
-		}
-
 		try {
+			if (CommandName == 'github') {
+				if (!interaction.isFromMessage()) return;
+				await CommandFile.executeModule?.(interaction);
+				return;
+			}
+
 			await CommandFile.executeModal?.(interaction);
 		} catch (error) {
 			console.error(error);
@@ -197,3 +197,7 @@ function geterrorembed(error: any) {
 }
 
 client.login(process.env.token);
+
+process.on('uncaughtException', console.error);
+
+process.on('unhandledRejection', console.error);

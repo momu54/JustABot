@@ -5,7 +5,7 @@ import {
 	SelectMenuBuilder,
 	SelectMenuOptionBuilder,
 } from 'discord.js';
-import { appoctokit } from '../../../../utility/github.js';
+import { appoctokit, GetAuthenticatedOctokit } from '../../../../utility/github.js';
 import { DeferUpdate } from '../../../../utility/other.js';
 
 export async function execute(
@@ -16,8 +16,11 @@ export async function execute(
 	await DeferUpdate(interaction);
 	// 取得關鍵字
 	const keyword = interaction.fields.getTextInputValue('github.repo.search.keyword');
+	// get octokit
+	let octokit = await GetAuthenticatedOctokit(interaction.user.id);
+	if (!octokit) octokit = appoctokit;
 	// 取得搜索结果
-	const { data } = await appoctokit.rest.search.repos({
+	const { data } = await octokit.rest.search.repos({
 		q: keyword,
 		sort: 'stars',
 		per_page: 25,
