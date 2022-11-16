@@ -23,14 +23,17 @@ export async function loadrepo(
 	const reponamedata = repofullname.split('/');
 	const reponame = reponamedata[1];
 	const repoowner = reponamedata[0];
+	// get octokit
+	let octokit = await GetAuthenticatedOctokit(user);
+	if (!octokit) octokit = appoctokit;
 	// 取得儲存庫資訊
-	const { data: repo } = await appoctokit.rest.repos.get({
+	const { data: repo } = await octokit.rest.repos.get({
 		repo: reponame,
 		owner: repoowner,
 	});
 	// FIXME: any type
 	// 取得 readme
-	const readme: any = await appoctokit.rest.repos
+	const readme: any = await octokit.rest.repos
 		.getReadme({
 			repo: reponame,
 			owner: repoowner,
@@ -44,9 +47,12 @@ export async function loadrepo(
 				status: err.status,
 			};
 		});
+	// create button
+	const button = new ButtonBuilder()
+		.setCustomId(`github.repo.star?${repoowner},${reponame}`)
+		.setDisabled(true)
+		.setStyle(ButtonStyle.Primary);
 	let isstaredstatuscode: number = 404;
-	// get octokit
-	const octokit = await GetAuthenticatedOctokit(user);
 	if (octokit) {
 		// get star status
 		({ status: isstaredstatuscode } = await octokit.rest.activity
@@ -54,9 +60,9 @@ export async function loadrepo(
 				repo: reponame,
 				owner: repoowner,
 			})
-			.catch((res: OctokitResponse<never, 404>) => {
-				return res;
-			}));
+			.catch((res: OctokitResponse<never, 404>) => res));
+		// enable star button
+		button.setDisabled(false);
 	}
 	// 建立 embed
 	const embed = new EmbedBuilder()
