@@ -38,7 +38,9 @@ const auth = createOAuthAppAuth({
 });
 // 建立Octokit實例
 export const appoctokit: Octokit = new Octokit({
-	auth: auth,
+	auth: await auth({
+		type: 'oauth-app',
+	}),
 	authStrategy: createOAuthAppAuth,
 });
 
