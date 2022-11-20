@@ -201,3 +201,9 @@ client.login(process.env.token);
 process.on('uncaughtException', console.error);
 
 process.on('unhandledRejection', console.error);
+
+client.on('debug', (debugmsg) => {
+	if (debugmsg.includes('Clearing the heartbeat interval.')) {
+		process.exit(0);
+	}
+});
