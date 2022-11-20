@@ -35,14 +35,15 @@ export async function execute(interaction: ButtonInteraction, _query: string[]) 
 		.setTitle('Account')
 		.setDescription('Manage your account.')
 		.setColor(0xffffff);
-	if (!octokit) return;
-	const { data: user } = await octokit.rest.users.getAuthenticated();
-	// 建立 embed
-	embed.setAuthor({
-		name: user.login,
-		iconURL: user.avatar_url,
-		url: user.html_url,
-	});
+	if (octokit) {
+		const { data: user } = await octokit.rest.users.getAuthenticated();
+		// 建立 embed
+		embed.setAuthor({
+			name: user.login,
+			iconURL: user.avatar_url,
+			url: user.html_url,
+		});
+	}
 	// 回復
 	await interaction.editReply({ embeds: [embed], components: [row] });
 }
