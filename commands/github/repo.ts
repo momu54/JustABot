@@ -44,7 +44,7 @@ export async function execute(interaction: ButtonInteraction, _query: string[]) 
 	// 建立 ActionRow
 	const btnrow = new ActionRowBuilder<ButtonBuilder>().addComponents(
 		new ButtonBuilder()
-			.setCustomId(`github.repo.search?${!!octokit}`)
+			.setCustomId(`github.repo.search`)
 			.setEmoji('🔎')
 			.setStyle(ButtonStyle.Primary)
 	);

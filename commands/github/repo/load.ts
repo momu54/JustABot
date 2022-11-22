@@ -25,6 +25,7 @@ export async function loadrepo(
 	const repoowner = reponamedata[0];
 	// get octokit
 	let octokit = await GetAuthenticatedOctokit(user);
+	const authed = !!octokit;
 	if (!octokit) octokit = appoctokit;
 	// 取得儲存庫資訊
 	const { data: repo } = await octokit.rest.repos.get({
@@ -47,11 +48,6 @@ export async function loadrepo(
 				status: err.status,
 			};
 		});
-	// create button
-	const button = new ButtonBuilder()
-		.setCustomId(`github.repo.star?${repoowner},${reponame}`)
-		.setDisabled(true)
-		.setStyle(ButtonStyle.Primary);
 	let isstaredstatuscode: number = 404;
 	if (octokit) {
 		// get star status
@@ -61,8 +57,6 @@ export async function loadrepo(
 				owner: repoowner,
 			})
 			.catch((res: OctokitResponse<never, 404>) => res));
-		// enable star button
-		button.setDisabled(false);
 	}
 	// 建立 embed
 	const embed = new EmbedBuilder()
@@ -74,9 +68,18 @@ export async function loadrepo(
 	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 		new ButtonBuilder()
 			.setCustomId(`github.repo.star?${repoowner},${reponame}`)
-			.setDisabled(!octokit)
-			.setLabel(isstaredstatuscode == 204 ? '★' : '☆')
-			.setStyle(ButtonStyle.Primary)
+			.setDisabled(!authed)
+			.setLabel(`${isstaredstatuscode == 204 ? '★' : '☆'} ${repo.stargazers_count}`)
+			.setStyle(ButtonStyle.Primary),
+		new ButtonBuilder()
+			.setCustomId('github.repo.owner')
+			.setLabel('Owner')
+			.setStyle(ButtonStyle.Primary),
+		new ButtonBuilder()
+			.setCustomId('github.repo.link')
+			.setLabel('Open')
+			.setStyle(ButtonStyle.Link)
+			.setURL(repo.html_url)
 	);
 	// 準備要回傳的資料
 	const msgplayload: WebhookEditMessageOptions = {

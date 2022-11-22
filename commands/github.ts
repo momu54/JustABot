@@ -39,6 +39,12 @@ export async function execute(
 				.setCustomId('github.repo')
 				.setLabel('Repository')
 				.setStyle(ButtonStyle.Primary)
+		)
+		.addComponents(
+			new ButtonBuilder()
+				.setCustomId('github.user')
+				.setLabel('User')
+				.setStyle(ButtonStyle.Primary)
 		);
 	// 回復交互
 	await interaction.reply({ embeds: [embed], components: [row], ephemeral: true });

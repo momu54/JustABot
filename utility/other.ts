@@ -15,5 +15,5 @@ export async function DeferUpdate(
 	const embed = new EmbedBuilder()
 		.setTitle('<a:Rolling:1037669173939150848> Processing...')
 		.setColor(0xffaa00);
-	await interaction.update({ embeds: [embed], components: [] });
+	await interaction.update({ embeds: [embed], components: [], files: [] });
 }
