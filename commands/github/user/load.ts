@@ -7,6 +7,7 @@ import {
 	WebhookEditMessageOptions,
 } from 'discord.js';
 import { appoctokit, GetAuthenticatedOctokit } from '../../../utility/github.js';
+import { setTimeout } from 'timers/promises';
 
 export async function loaduser(
 	values: string[],
@@ -16,8 +17,9 @@ export async function loaduser(
 	let octokit = await GetAuthenticatedOctokit(user);
 	const authed = !!octokit;
 	if (!octokit) octokit = appoctokit;
-	// gete keyword
+	// get keyword
 	const keyword = values[0];
+	await setTimeout(1000);
 	// get user data
 	const { data: ghuser } = await octokit.rest.users.getByUsername({
 		username: keyword,
@@ -42,7 +44,8 @@ export async function loaduser(
 		new ButtonBuilder()
 			.setCustomId(`github.user.follow?${ghuser.login}`)
 			.setDisabled(!authed)
-			.setLabel(`${isfollowedstatuscode == 204 ? '🔔' : '🔕'} ${ghuser.followers}`)
+			.setEmoji(isfollowedstatuscode == 204 ? '🔔' : '🔕')
+			.setLabel(ghuser.followers.toString())
 			.setStyle(ButtonStyle.Primary)
 	);
 	// 準備要回傳的資料

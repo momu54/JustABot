@@ -33,7 +33,7 @@ export async function execute(interaction: ButtonInteraction, _query: string[]) 
 	// 生成設備代碼
 	const auth = createOAuthDeviceAuth({
 		clientId: process.env.githubclientid!,
-		scopes: ['repo'],
+		scopes: ['repo', 'user'],
 		async onVerification(verification) {
 			// 建立embed
 			const embed = new EmbedBuilder()
