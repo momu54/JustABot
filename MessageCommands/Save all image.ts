@@ -27,7 +27,7 @@ export async function execute(interaction: MessageContextMenuCommandInteraction)
 			Attachment.contentType != 'image/webp' &&
 			Attachment.contentType != 'image/jpeg';
 		if (isntwebporjpeg) {
-			resimage = await sharp(resimage)
+			resimage = await sharp(resimage, { animated: true })
 				.webp({
 					quality: 82,
 				})
