@@ -26,6 +26,7 @@
 		"@octokit/rest": "^19.0.5",
 		"@octokit/types": "^8.0.0",
 		"@ts-morph/bootstrap": "^0.17.0",
+		"discord-api-types": "^0.37.20",
 		"discord.js": "^14.6.0",
 		"dotenv": "^16.0.3",
 		"jimp": "^0.16.2",

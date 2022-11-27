@@ -1,18 +1,22 @@
 import {
-	ApplicationCommandType,
 	Client,
 	codeBlock,
-	Collection,
-	ComponentType,
+	CommandInteraction,
 	EmbedBuilder,
+	Events,
+	MessageComponentInteraction,
+	ModalSubmitInteraction,
+	SlashCommandBuilder,
+} from 'discord.js';
+import {
+	ApplicationCommandType,
+	ComponentType,
 	GatewayIntentBits,
 	InteractionType,
-	Events,
-} from 'discord.js';
+} from 'discord-api-types/v10';
 import 'dotenv/config';
-import path from 'path';
 import fs from 'fs';
-import { Command, MessageCommandType } from './typings/type.js';
+import { Command } from './typings/type.js';
 // load other features
 import { execute, ExecuteChannelCreate } from './other/voicechannel.js';
 
@@ -25,91 +29,66 @@ const client = new Client({
 	],
 });
 
-let commands = new Collection<string, Command>();
-let MessageCommands = new Collection<string, MessageCommandType>();
-const CommandsPath = path.join('./', 'commands');
-const CommandsFiles = fs.readdirSync(CommandsPath);
-const MessageCommandsPath = path.join('./', 'MessageCommands');
-const MessageCommandsFiles = fs.readdirSync(MessageCommandsPath);
+const CommandsFiles = fs
+	.readdirSync('./commands/')
+	.filter((file) => file.endsWith('.ts'))
+	.map((file) => `./commands/${file}`);
+const MessageCommandsFiles = fs
+	.readdirSync('./MessageCommands/')
+	.filter((file) => file.endsWith('.ts'))
+	.map((file) => `./MessageCommands/${file}`);
 client.on('ready', async () => {
 	console.log('ready!');
-	await loadcommand();
+	await LoadAllCommands();
 });
 
-async function loadcommand() {
-	// const clientcommands = client.application?.commands;
+async function LoadAllCommands() {
 	console.log('Started refreshing application (/) commands.');
+	const commands: SlashCommandBuilder[] = [];
 	for (const file of CommandsFiles) {
-		const filePath = `./commands/${file}`;
-		if (!file.endsWith('.ts')) continue;
-		const command = (await import(filePath)) as Command;
-		commands.set(command.data.name, command);
+		const path = `./commands/${file}`;
+		await LoadCommand(path, commands);
 	}
 	for (const file of MessageCommandsFiles) {
-		const filePath = `./MessageCommands/${file}`;
-		const command = (await import(filePath)) as MessageCommandType;
-		MessageCommands.set(command.data.name, command);
+		const path = `./MessageCommands/${file}`;
+		await LoadCommand(path, commands);
 	}
-	// const AllCommands: SlashCommandBuilder[] = [...commands, ...MessageCommands].map(
-	// 	(command) => command[1].data
-	// );
-	// await clientcommands?.set(AllCommands);
 	console.log('Successfully reloaded application (/) commands.');
+}
+
+async function LoadCommand(path: string, commands: SlashCommandBuilder[]) {
+	let command: SlashCommandBuilder;
+	({ data: command } = await import(path));
+	commands.push(command);
 }
 
 client.on(Events.InteractionCreate, async (interaction) => {
 	if (interaction.type == InteractionType.ApplicationCommand) {
 		if (interaction.commandType == ApplicationCommandType.ChatInput) {
-			const CommandFile = commands.get(interaction.commandName);
-
-			if (!CommandFile) return;
+			const CommandFile = (await import(
+				`./commands/${interaction.commandName}`
+			)) as Command;
 
 			try {
 				await CommandFile.execute(interaction);
 			} catch (error) {
-				console.error(error);
-				const errorembed = geterrorembed(error);
-				try {
-					await interaction.reply({
-						embeds: [errorembed],
-						ephemeral: true,
-					});
-				} catch (err) {
-					console.error(err);
-					await interaction.editReply({
-						embeds: [errorembed],
-					});
-				}
+				await InteractionErrorHandler(error, interaction);
 			}
 		} else if (interaction.commandType == ApplicationCommandType.Message) {
-			const CommandFile = MessageCommands.get(interaction.commandName);
-
-			if (!CommandFile) return;
+			const CommandFile = (await import(
+				`./MessageCommands/${interaction.commandName}`
+			)) as Command;
 
 			try {
 				await CommandFile.execute(interaction);
 			} catch (error) {
-				console.error(error);
-				const errorembed = geterrorembed(error);
-				try {
-					await interaction.reply({
-						embeds: [errorembed],
-						ephemeral: true,
-					});
-				} catch (err) {
-					console.error(err);
-					await interaction.editReply({
-						embeds: [errorembed],
-					});
-				}
+				await InteractionErrorHandler(error, interaction);
 			}
 		}
 	}
 	if (interaction.type == InteractionType.MessageComponent) {
 		const CommandName = interaction.customId.split('.')[0];
-		const CommandFile = commands.get(CommandName);
-
-		if (!CommandFile) return;
+		const CommandFile = (await import(`./commands/${CommandName}`)) as Command;
 
 		if (CommandName == 'github') {
 			await CommandFile.executeModule?.(interaction);
@@ -120,27 +99,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			try {
 				await CommandFile.executeBtn?.(interaction);
 			} catch (error) {
-				console.error(error);
-				const errorembed = geterrorembed(error);
-				try {
-					await interaction.reply({
-						embeds: [errorembed],
-						ephemeral: true,
-					});
-				} catch (err) {
-					console.error(err);
-					await interaction.editReply({
-						embeds: [errorembed],
-					});
-				}
+				await InteractionErrorHandler(error, interaction);
 			}
 		}
 	}
 	if (interaction.type == InteractionType.ModalSubmit) {
 		const CommandName = interaction.customId.split('.')[0];
-		const CommandFile = commands.get(CommandName);
-
-		if (!CommandFile) return;
+		const CommandFile = (await import(`./commands/${CommandName}`)) as Command;
 
 		try {
 			if (CommandName == 'github') {
@@ -150,36 +115,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			}
 
 			await CommandFile.executeModal?.(interaction);
-		} catch (error) {
-			console.error(error);
-			const errorembed = geterrorembed(error);
-			try {
-				await interaction.reply({
-					embeds: [errorembed],
-					ephemeral: true,
-				});
-			} catch (err) {
-				console.error(err);
-				await interaction.editReply({
-					embeds: [errorembed],
-				});
-			}
-		}
-	}
-	if (interaction.type == InteractionType.ApplicationCommandAutocomplete) {
-		const CommandFile = commands.get(interaction.commandName);
-
-		if (!CommandFile) return;
-
-		try {
-			await CommandFile.executeAutoComplete?.(interaction);
-		} catch (error) {
-			console.error(error);
-		}
+		} catch (error) {}
 	}
 });
 
-client.on('voiceStateUpdate', async (oldvoice, voice) => {
+client.on(Events.VoiceStateUpdate, async (oldvoice, voice) => {
 	try {
 		await execute(oldvoice, voice);
 	} catch (error) {
@@ -187,23 +127,37 @@ client.on('voiceStateUpdate', async (oldvoice, voice) => {
 	}
 });
 
-client.on('channelCreate', ExecuteChannelCreate);
-
-function geterrorembed(error: any) {
-	return new EmbedBuilder()
-		.setColor(0xf00000)
-		.setTitle('error!')
-		.setDescription(codeBlock('js', (error as Error).stack!));
-}
+client.on(Events.ChannelCreate, ExecuteChannelCreate);
 
 client.login(process.env.token);
 
 process.on('uncaughtException', console.error);
-
 process.on('unhandledRejection', console.error);
 
-client.on('debug', (debugmsg) => {
+client.on(Events.Debug, (debugmsg) => {
 	if (debugmsg.includes('Clearing the heartbeat interval.')) {
 		process.exit(0);
 	}
 });
+
+async function InteractionErrorHandler(
+	error: any,
+	interaction: MessageComponentInteraction | CommandInteraction | ModalSubmitInteraction
+) {
+	console.error(error);
+	const errorembed = new EmbedBuilder()
+		.setColor(0xf00000)
+		.setTitle('error!')
+		.setDescription(codeBlock('js', (error as Error).stack!));
+	try {
+		await interaction.reply({
+			embeds: [errorembed],
+			ephemeral: true,
+		});
+	} catch (err) {
+		console.error(err);
+		await interaction.editReply({
+			embeds: [errorembed],
+		});
+	}
+}
