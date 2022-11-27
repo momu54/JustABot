@@ -46,12 +46,10 @@ async function LoadAllCommands() {
 	console.log('Started refreshing application (/) commands.');
 	const commands: SlashCommandBuilder[] = [];
 	for (const file of CommandsFiles) {
-		const path = `./commands/${file}`;
-		await LoadCommand(path, commands);
+		await LoadCommand(file, commands);
 	}
 	for (const file of MessageCommandsFiles) {
-		const path = `./MessageCommands/${file}`;
-		await LoadCommand(path, commands);
+		await LoadCommand(file, commands);
 	}
 	console.log('Successfully reloaded application (/) commands.');
 }
@@ -66,7 +64,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 	if (interaction.type == InteractionType.ApplicationCommand) {
 		if (interaction.commandType == ApplicationCommandType.ChatInput) {
 			const CommandFile = (await import(
-				`./commands/${interaction.commandName}`
+				`./commands/${interaction.commandName}.ts`
 			)) as Command;
 
 			try {
@@ -76,7 +74,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 			}
 		} else if (interaction.commandType == ApplicationCommandType.Message) {
 			const CommandFile = (await import(
-				`./MessageCommands/${interaction.commandName}`
+				`./MessageCommands/${interaction.commandName}.ts`
 			)) as Command;
 
 			try {
@@ -88,7 +86,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 	}
 	if (interaction.type == InteractionType.MessageComponent) {
 		const CommandName = interaction.customId.split('.')[0];
-		const CommandFile = (await import(`./commands/${CommandName}`)) as Command;
+		const CommandFile = (await import(`./commands/${CommandName}.ts`)) as Command;
 
 		if (CommandName == 'github') {
 			await CommandFile.executeModule?.(interaction);
@@ -105,7 +103,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 	}
 	if (interaction.type == InteractionType.ModalSubmit) {
 		const CommandName = interaction.customId.split('.')[0];
-		const CommandFile = (await import(`./commands/${CommandName}`)) as Command;
+		const CommandFile = (await import(`./commands/${CommandName}.ts`)) as Command;
 
 		try {
 			if (CommandName == 'github') {

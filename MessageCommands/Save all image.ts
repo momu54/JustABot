@@ -6,14 +6,15 @@ import {
 	MessageContextMenuCommandInteraction,
 } from 'discord.js';
 import JSZip from 'jszip';
-import jimp from 'jimp';
+import sharp from 'sharp';
+import { deferReply } from '../utility/other.js';
 
 export const data = new ContextMenuCommandBuilder()
 	.setName('Save all image')
 	.setType(ApplicationCommandType.Message);
 
 export async function execute(interaction: MessageContextMenuCommandInteraction) {
-	await interaction.deferReply({ ephemeral: true });
+	await deferReply(interaction);
 	const msg = interaction.targetMessage;
 	const AttachmentList = Array.from(msg.attachments.values());
 	const zip = new JSZip();
@@ -22,12 +23,21 @@ export async function execute(interaction: MessageContextMenuCommandInteraction)
 		if (!Attachment.contentType?.startsWith('image')) continue;
 		const res = await fetch(Attachment.url);
 		let resimage = Buffer.from(await res.arrayBuffer());
-		if (Attachment.contentType != 'image/jpeg') {
-			const jimpimage = await jimp.read(resimage);
-			jimpimage.quality(70);
-			resimage = await jimpimage.getBufferAsync('image/jpeg');
+		const isntwebporjpeg =
+			Attachment.contentType != 'image/webp' &&
+			Attachment.contentType != 'image/jpeg';
+		if (isntwebporjpeg) {
+			resimage = await sharp(resimage)
+				.webp({
+					quality: 82,
+				})
+				.toBuffer();
 		}
-		zip.file(`${index + 1}.${Attachment.name?.replace('png', 'jpg')}`, resimage, {
+		const spiltedfilename = Attachment.name?.split('.');
+		const filename = isntwebporjpeg
+			? Attachment.name?.replaceAll(spiltedfilename?.pop()!, 'webp')
+			: Attachment.name;
+		zip.file(`${index + 1}.${filename}`, resimage, {
 			binary: true,
 			compression: 'DEFLATE',
 		});
@@ -42,12 +52,14 @@ export async function execute(interaction: MessageContextMenuCommandInteraction)
 		return;
 	}
 	const zipAttachment = new AttachmentBuilder(zipData, {
-		name: `${new Date().toTimeString()}.${msg.id}.zip`,
+		name: `${new Date().toJSON()}.${msg.id}.zip`,
 	});
 	const size = (zipData.byteLength * 0.000001).toFixed(2);
 	const embed = new EmbedBuilder()
 		.setColor(0xffffff)
 		.setTitle('done!')
-		.setDescription(`size: ${size}MB`);
+		.setDescription(
+			`size: ${size}MB\nAll images not in jpeg or webp format are converted to webp at quality 82.`
+		);
 	await interaction.editReply({ embeds: [embed], files: [zipAttachment] });
 }
