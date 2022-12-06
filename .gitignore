@@ -104,3 +104,5 @@ dist
 ./**/.js
 
 database/
+
+package-lock.json
